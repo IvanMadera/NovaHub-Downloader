@@ -66,23 +66,23 @@ def download_youtube_audio(url, output_path, progress_callback=None, title_callb
             'quiet': True,
             'no_warnings': True,
         }
-        
+
         with YoutubeDL(ydl_opts_info) as ydl:
             info = ydl.extract_info(url, download=False)
             original_title = info.get('title', 'audio')
             # Eliminar emojis del título
             original_title = remove_emojis(original_title)
-        
+
         # Notificar el título de inmediato
         if title_callback:
             title_callback(original_title)
-        
+
         # Ahora descargar
         ydl_opts = {
-            'format': 'bestaudio/best',
+            'format': 'bestaudio',
             'outtmpl': os.path.join(output_path, original_title + '.%(ext)s'),
             'postprocessors': [
-                {'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '192'},
+                {'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '320'},
                 {'key': 'FFmpegMetadata'},
             ],
             'noplaylist': True,

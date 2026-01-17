@@ -295,14 +295,6 @@ class NovaHub(ctk.CTk):
             self.path.delete(0, "end")
             self.path.insert(0, folder)
 
-    def update_card_value(self, card_frame, value):
-        """Actualiza el valor de una tarjeta"""
-        for widget in card_frame.winfo_children():
-            if isinstance(widget, ctk.CTkLabel):
-                if hasattr(widget, '_text'):
-                    widget.configure(text=value)
-                    break
-
     def update_stats(self, queue_count, progress, successful, failed):
         """Actualiza las estadísticas"""
         for widget in self.queue_label.winfo_children():
