@@ -2,9 +2,11 @@ import customtkinter as ctk
 from tkinter import filedialog
 from datetime import datetime
 import threading
+import time
 import re
 import os
 from youtube import download_youtube_audio
+from threading import Lock
 
 # ================== CONFIG ==================
 ctk.set_appearance_mode("dark")
@@ -17,7 +19,7 @@ ACCENT   = "#3B5998"
 SUCCESS  = "#9ECE6A"
 TEXT_SEC = "#A9B1D6"
 ERROR    = "#F7768E"
-RADIUS   = 16
+RADIUS   = 14
 
 
 class NovaHub(ctk.CTk):
@@ -33,6 +35,7 @@ class NovaHub(ctk.CTk):
         self.successful_downloads = []
         self.failed_downloads = []
         self.is_downloading = False
+        self.console_lock = Lock()  # Lock para proteger acceso a la consola
 
         self.title("Nova Hub")
         self.geometry("1280x760")
@@ -116,7 +119,8 @@ class NovaHub(ctk.CTk):
             left,
             height=160,
             fg_color=BG_PANEL,
-            border_width=0
+            border_width=0,
+            corner_radius=RADIUS
         )
         self.links.pack(fill="both", pady=(8, 0))
 
@@ -163,13 +167,13 @@ class NovaHub(ctk.CTk):
 
         self.queue_label = self.card(stats, "EN COLA", "0")
         self.queue_label.grid(row=0, column=0, padx=6)
-        
+
         self.progress_label = self.card(stats, "PROGRESO", "0%")
         self.progress_label.grid(row=0, column=1, padx=6)
-        
+
         self.success_label = self.card(stats, "EXITOSOS", "0", SUCCESS)
         self.success_label.grid(row=0, column=2, padx=6)
-        
+
         self.failed_label = self.card(stats, "FALLIDOS", "0", ERROR)
         self.failed_label.grid(row=0, column=3, padx=6)
 
@@ -200,7 +204,7 @@ class NovaHub(ctk.CTk):
         row = ctk.CTkFrame(dest, fg_color="transparent")
         row.pack(fill="x", padx=16, pady=(0, 12))
 
-        self.path = ctk.CTkEntry(row, fg_color=BG_MAIN, border_width=0)
+        self.path = ctk.CTkEntry(row, fg_color=BG_MAIN, border_width=0, corner_radius=RADIUS)
         self.path.insert(0, "C:/Descargas")
         self.path.pack(side="left", fill="x", expand=True, padx=(0, 8))
 
@@ -214,22 +218,37 @@ class NovaHub(ctk.CTk):
         ).pack(side="right")
 
         # ================== CONSOLE ==================
+        console_header = ctk.CTkFrame(main, fg_color="transparent")
+        console_header.pack(fill="x", pady=(14, 6))
+
         ctk.CTkLabel(
-            main,
+            console_header,
             text="Resultado de la cola",
             text_color=TEXT_SEC
-        ).pack(anchor="w", pady=(14, 6))
+        ).pack(side="left", anchor="w")
+
+        ctk.CTkButton(
+            console_header,
+            text="Limpiar consola",
+            width=106,
+            height=32,
+            fg_color="#1C2230",
+            hover_color="#252B3A",
+            font=ctk.CTkFont(size=12),
+            command=self.clear_console
+        ).pack(side="right", anchor="e")
 
         self.console = ctk.CTkTextbox(
             main,
             height=140,
             fg_color=BG_PANEL,
             border_width=0,
+            corner_radius=RADIUS,
             state="normal"
         )
         self.console.pack(fill="both", expand=True)
         # Inicializar consola con títulos
-        self.console.insert("end", "✔ Exitosos:\n\n✖ Fallidos:\n")
+        self.console.insert("end", "✔ Exitosos:\n✖ Fallidos:\n")
         self.console.configure(state="disabled")
 
     # ================== CARD ==================
@@ -277,17 +296,17 @@ class NovaHub(ctk.CTk):
             if isinstance(widget, ctk.CTkLabel):
                 widget.configure(text=str(queue_count))
                 break
-        
+
         for widget in self.progress_label.winfo_children():
             if isinstance(widget, ctk.CTkLabel):
                 widget.configure(text=progress)
                 break
-        
+
         for widget in self.success_label.winfo_children():
             if isinstance(widget, ctk.CTkLabel):
                 widget.configure(text=str(successful))
                 break
-        
+
         for widget in self.failed_label.winfo_children():
             if isinstance(widget, ctk.CTkLabel):
                 widget.configure(text=str(failed))
@@ -297,79 +316,96 @@ class NovaHub(ctk.CTk):
         """Actualiza la consola con resultados finales"""
         self.console.configure(state="normal")
         self.console.delete("1.0", "end")
-        
+
         success_text = "✔ Exitosos:\n"
         for i, title in enumerate(successful, 1):
             success_text += f"  {i}. {title}\n"
-        
+
         failed_text = "\n✖ Fallidos:\n"
         for i, title in enumerate(failed, 1):
             failed_text += f"  {i}. {title}\n"
-        
+
         self.console.insert("end", success_text + failed_text)
         self.console.configure(state="disabled")
 
     def add_success_to_console(self, title):
         """Agrega un título exitoso a la consola en vivo"""
-        self.console.configure(state="normal")
-        # Buscar la línea de "✖ Fallidos:" e insertar antes
-        content = self.console.get("1.0", "end")
-        failed_pos = content.find("✖ Fallidos:")
-        
-        if failed_pos != -1:
-            # Contar líneas antes de "✖ Fallidos:"
-            before_text = content[:failed_pos]
-            line_num = before_text.count('\n') + 1
-            self.console.insert(f"{line_num}.0", f"  {len(self.successful_downloads)}. {title}\n")
-        else:
-            self.console.insert("end", f"  {len(self.successful_downloads)}. {title}\n")
-        
-        self.console.configure(state="disabled")
-    
+        with self.console_lock:
+            self.console.configure(state="normal")
+            # Buscar la línea de "✖ Fallidos:" e insertar antes
+            content = self.console.get("1.0", "end")
+            failed_pos = content.find("✖ Fallidos:")
+
+            if failed_pos != -1:
+                # Contar líneas antes de "✖ Fallidos:"
+                before_text = content[:failed_pos]
+                line_num = before_text.count('\n') + 1
+                # Insertar sin salto de línea extra, solo el normal
+                self.console.insert(f"{line_num}.0", f"  {len(self.successful_downloads)}. {title}\n")
+            else:
+                self.console.insert("end", f"  {len(self.successful_downloads)}. {title}\n")
+
+            self.console.configure(state="disabled")
+
+        time.sleep(1)
+
     def add_failed_to_console(self, title):
         """Agrega un título fallido a la consola en vivo"""
-        self.console.configure(state="normal")
-        self.console.insert("end", f"  {len(self.failed_downloads)}. {title}\n")
-        self.console.configure(state="disabled")
-    
+        with self.console_lock:
+            self.console.configure(state="normal")
+            self.console.insert("end", f"  {len(self.failed_downloads)}. {title}\n")
+            self.console.configure(state="disabled")
+
+        time.sleep(1)
+
     def show_console_error(self, message):
         """Muestra un error en la consola"""
-        self.console.configure(state="normal")
-        self.console.insert("end", f"\n❌ {message}\n")
-        self.console.configure(state="disabled")
+        with self.console_lock:
+            self.console.configure(state="normal")
+            self.console.insert("end", f"\n❌ {message}\n")
+            self.console.configure(state="disabled")
+
+    def clear_console(self):
+        """Limpia la consola y restaura los títulos"""
+        with self.console_lock:
+            self.console.configure(state="normal")
+            self.console.delete("1.0", "end")
+            self.console.insert("end", "✔ Exitosos:\n✖ Fallidos:\n")
+            self.console.configure(state="disabled")
 
     def start_download(self):
         """Inicia el proceso de descarga"""
         if self.is_downloading:
             self.show_console_error("Ya hay una descarga en progreso")
             return
-        
+
         # Obtener enlaces
         links_text = self.links.get("1.0", "end").strip()
         if not links_text:
             self.show_console_error("Por favor ingresa al menos un enlace")
             return
-        
+
         urls = [line.strip() for line in links_text.split('\n') if line.strip()]
-        
+
         # Obtener carpeta de destino y validar
         output_path = self.path.get()
         if not output_path or not os.path.exists(output_path) or not os.path.isdir(output_path):
             self.show_console_error("Por favor selecciona una carpeta válida que exista")
             return
-        
+
         # Resetear variables
         self.successful_downloads = []
         self.failed_downloads = []
         self.is_downloading = True
         self.download_button.configure(state="disabled")
-        
+
         # Limpiar consola manteniendo los títulos
-        self.console.configure(state="normal")
-        self.console.delete("1.0", "end")
-        self.console.insert("end", "✔ Exitosos:\n\n✖ Fallidos:\n")
-        self.console.configure(state="disabled")
-        
+        with self.console_lock:
+            self.console.configure(state="normal")
+            self.console.delete("1.0", "end")
+            self.console.insert("end", "✔ Exitosos:\n✖ Fallidos:\n")
+            self.console.configure(state="disabled")
+
         # Iniciar descarga en thread separado
         thread = threading.Thread(target=self._download_thread, args=(urls, output_path))
         thread.daemon = True
@@ -379,11 +415,11 @@ class NovaHub(ctk.CTk):
         """Thread de descarga"""
         try:
             total = len(urls)
-            
+
             for idx, url in enumerate(urls):
                 if not self.is_downloading:
                     break
-                
+
                 # Actualizar estadísticas
                 self.update_stats(
                     queue_count=total - idx,
@@ -391,7 +427,7 @@ class NovaHub(ctk.CTk):
                     successful=len(self.successful_downloads),
                     failed=len(self.failed_downloads)
                 )
-                
+
                 # Callback de progreso
                 def progress_callback(percent, speed, eta):
                     # Extraer solo el porcentaje usando regex
@@ -403,14 +439,14 @@ class NovaHub(ctk.CTk):
                         successful=len(self.successful_downloads),
                         failed=len(self.failed_downloads)
                     )
-                
+
                 # Callback para actualizar el título inmediatamente
                 def title_callback(title):
                     self.video_title.configure(text=title)
-                
+
                 # Descargar
                 success, title = download_youtube_audio(url, output_path, progress_callback, title_callback)
-                
+
                 if success and title:
                     self.successful_downloads.append(title)
                     self.add_success_to_console(title)
@@ -431,10 +467,10 @@ class NovaHub(ctk.CTk):
                         successful=len(self.successful_downloads),
                         failed=len(self.failed_downloads)
                     )
-        
+
         except Exception as e:
             self.show_console_error(f"Error durante la descarga: {str(e)}")
-        
+
         finally:
             self.is_downloading = False
             self.download_button.configure(state="normal")
