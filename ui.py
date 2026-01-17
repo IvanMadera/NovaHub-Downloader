@@ -5,6 +5,7 @@ import threading
 import time
 import re
 import os
+from PIL import Image
 from youtube import download_youtube_audio
 from threading import Lock
 
@@ -127,7 +128,7 @@ class NovaHub(ctk.CTk):
         # -------- PREVIEW (ALIGNED HEIGHT) --------
         preview = ctk.CTkFrame(
             top,
-            width=320,
+            width=180,
             height=160,
             fg_color=BG_PANEL,
             corner_radius=RADIUS
@@ -135,11 +136,23 @@ class NovaHub(ctk.CTk):
         preview.grid(row=0, column=1, sticky="nsew")
         preview.pack_propagate(False)
 
-        ctk.CTkLabel(
-            preview,
-            text="Vista previa",
-            text_color=TEXT_SEC
-        ).pack(expand=True)
+        # Cargar imagen
+        try:
+            img = Image.open("assets/NovaHub_title.png")
+            # Ajustar imagen proporcionalmente al contenedor
+            img.thumbnail((320, 160), Image.Resampling.LANCZOS)
+            photo = ctk.CTkImage(light_image=img, dark_image=img, size=img.size)
+            self.preview_label = ctk.CTkLabel(preview, image=photo, text="")
+            self.preview_label.image = photo
+            self.preview_label.pack(expand=True)
+        except Exception as e:
+            print(f"Error cargando imagen: {e}")
+            self.preview_label = ctk.CTkLabel(
+                preview,
+                text="Vista previa",
+                text_color=TEXT_SEC
+            )
+            self.preview_label.pack(expand=True)
 
         # ================== VIDEO INFO ==================
         info = ctk.CTkFrame(main, fg_color=BG_PANEL, corner_radius=RADIUS)
