@@ -48,5 +48,5 @@ wheels/
 .DS_Store
 
 # Archivos específicos del proyecto
-main.py
 links.txt
+descargas/

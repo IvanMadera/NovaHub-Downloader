@@ -1,17 +1,14 @@
 import customtkinter as ctk
 from tkinter import filedialog
-from datetime import datetime
 import threading
 import time
 import re
 import os
 from PIL import Image
-from youtube import download_youtube_audio
 from threading import Lock
 
-# ================== CONFIG ==================
-ctk.set_appearance_mode("dark")
-ctk.set_default_color_theme("dark-blue")
+from downloaders.youtube import YouTubeDownloader
+from ui.base_ui import PlatformUI
 
 # ===== PALETA =====
 BG_MAIN  = "#0E1116"
@@ -23,86 +20,29 @@ ERROR    = "#F7768E"
 RADIUS   = 14
 
 
-class NovaHub(ctk.CTk):
-
-    def __init__(self):
-        super().__init__()
-
-        self.title("Nova Hub")
-        self.geometry("1280x760")
-        self.minsize(1180, 700)
-        self.configure(fg_color=BG_MAIN)
-
+class YouTubeUI(PlatformUI):
+    
+    def __init__(self, parent_frame: ctk.CTkFrame, console_lock: Lock):
+        super().__init__(parent_frame, "YouTube")
+        self.console_lock = console_lock
+        self.downloader = YouTubeDownloader()
         self.successful_downloads = []
         self.failed_downloads = []
         self.is_downloading = False
-        self.console_lock = Lock()  # Lock para proteger acceso a la consola
-
-        self.title("Nova Hub")
-        self.geometry("1280x760")
-        self.minsize(1180, 700)
-        self.configure(fg_color=BG_MAIN)
-
-        # ================== SIDEBAR ==================
-        sidebar = ctk.CTkFrame(
-            self,
-            width=240,
-            fg_color=BG_PANEL,
-            corner_radius=0
-        )
-        sidebar.pack(side="left", fill="y")
-        sidebar.pack_propagate(False)
-
+        self.main_frame = None
+        
+    def build(self):
+        """Construye la interfaz de YouTube"""
+        self.main_frame = ctk.CTkFrame(self.parent_frame, fg_color=BG_MAIN)
+        
         ctk.CTkLabel(
-            sidebar,
-            text="╫ Nova Hub",
-            font=ctk.CTkFont(size=20, weight="bold"),
-            text_color=ACCENT
-        ).pack(pady=28)
-
-        PLATFORMS = [
-            ("◈", "YouTube"),
-            ("◈", "TikTok"),
-            ("◈", "Instagram"),
-            ("◈", "Facebook"),
-            ("◈", "X / Twitter"),
-        ]
-
-        for icon, name in PLATFORMS:
-            ctk.CTkButton(
-                sidebar,
-                text=f"{icon}  {name}",
-                height=44,
-                anchor="w",
-                fg_color=BG_PANEL,
-                hover_color="#1C2230",
-                text_color=TEXT_SEC,
-                font=ctk.CTkFont(size=14)
-            ).pack(fill="x", padx=18, pady=6)
-
-        # ================== FOOTER ==================
-        footer = ctk.CTkFrame(sidebar, fg_color="transparent")
-        footer.pack(side="bottom", fill="x", padx=12, pady=20)
-
-        ctk.CTkLabel(
-            footer,
-            text=f"© Copyright {datetime.now().year}",
-            text_color=TEXT_SEC,
-            font=ctk.CTkFont(size=14)
-        ).pack()
-
-        # ================== MAIN ==================
-        main = ctk.CTkFrame(self, fg_color=BG_MAIN)
-        main.pack(side="left", fill="both", expand=True, padx=20, pady=20)
-
-        ctk.CTkLabel(
-            main,
-            text="DESCARGA DE CONTENIDO",
+            self.main_frame,
+            text="DESCARGA DE CONTENIDO - YOUTUBE",
             font=ctk.CTkFont(size=22, weight="bold")
         ).pack(anchor="w", pady=(0, 20))
 
         # ================== LINKS + PREVIEW ==================
-        top = ctk.CTkFrame(main, fg_color="transparent")
+        top = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         top.pack(fill="x", pady=(0, 18))
         top.grid_columnconfigure(0, weight=1)
 
@@ -124,8 +64,9 @@ class NovaHub(ctk.CTk):
             corner_radius=RADIUS
         )
         self.links.pack(fill="both", pady=(8, 0))
+        self.links.bind('<KeyRelease>', self.clean_links)
 
-        # -------- PREVIEW (ALIGNED HEIGHT) --------
+        # -------- PREVIEW --------
         preview = ctk.CTkFrame(
             top,
             width=180,
@@ -136,10 +77,8 @@ class NovaHub(ctk.CTk):
         preview.grid(row=0, column=1, sticky="nsew")
         preview.pack_propagate(False)
 
-        # Cargar imagen
         try:
             img = Image.open("assets/NovaHub_title.png")
-            # Ajustar imagen proporcionalmente al contenedor
             img.thumbnail((320, 160), Image.Resampling.LANCZOS)
             photo = ctk.CTkImage(light_image=img, dark_image=img, size=img.size)
             self.preview_label = ctk.CTkLabel(preview, image=photo, text="")
@@ -155,7 +94,7 @@ class NovaHub(ctk.CTk):
             self.preview_label.pack(expand=True)
 
         # ================== VIDEO INFO ==================
-        info = ctk.CTkFrame(main, fg_color=BG_PANEL, corner_radius=RADIUS)
+        info = ctk.CTkFrame(self.main_frame, fg_color=BG_PANEL, corner_radius=RADIUS)
         info.pack(fill="x", pady=(0, 18))
 
         ctk.CTkLabel(
@@ -172,7 +111,7 @@ class NovaHub(ctk.CTk):
         self.video_title.pack(anchor="w", padx=16, pady=(0, 12))
 
         # ================== STATS ==================
-        stats = ctk.CTkFrame(main, fg_color="transparent")
+        stats = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         stats.pack(fill="x", pady=10)
 
         for i in range(5):
@@ -205,7 +144,7 @@ class NovaHub(ctk.CTk):
         self.download_button.grid(row=0, column=4, sticky="nsew", padx=6)
 
         # ================== DESTINO ==================
-        dest = ctk.CTkFrame(main, fg_color=BG_PANEL, corner_radius=RADIUS)
+        dest = ctk.CTkFrame(self.main_frame, fg_color=BG_PANEL, corner_radius=RADIUS)
         dest.pack(fill="x", pady=(20, 10))
 
         ctk.CTkLabel(
@@ -231,7 +170,7 @@ class NovaHub(ctk.CTk):
         ).pack(side="right")
 
         # ================== CONSOLE ==================
-        console_header = ctk.CTkFrame(main, fg_color="transparent")
+        console_header = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         console_header.pack(fill="x", pady=(14, 6))
 
         ctk.CTkLabel(
@@ -252,7 +191,7 @@ class NovaHub(ctk.CTk):
         ).pack(side="right", anchor="e")
 
         self.console = ctk.CTkTextbox(
-            main,
+            self.main_frame,
             height=140,
             fg_color=BG_PANEL,
             border_width=0,
@@ -260,12 +199,25 @@ class NovaHub(ctk.CTk):
             state="normal"
         )
         self.console.pack(fill="both", expand=True)
-        # Inicializar consola con títulos
         self.console.insert("end", "✔ Exitosos:\n✖ Fallidos:\n")
         self.console.configure(state="disabled")
 
-    # ================== CARD ==================
+    def show(self):
+        """Muestra la interfaz"""
+        if self.main_frame:
+            self.main_frame.pack(side="left", fill="both", expand=True, padx=20, pady=20)
+
+    def hide(self):
+        """Oculta la interfaz"""
+        if self.main_frame:
+            self.main_frame.pack_forget()
+
+    def get_frame(self) -> ctk.CTkFrame:
+        """Retorna el frame principal"""
+        return self.main_frame
+
     def card(self, parent, title, value, color="white"):
+        """Crea una tarjeta de estadísticas"""
         frame = ctk.CTkFrame(
             parent,
             height=100,
@@ -289,7 +241,17 @@ class NovaHub(ctk.CTk):
 
         return frame
 
+    def clean_links(self, event=None):
+        """Elimina dobles saltos de línea en el textbox de links"""
+        content = self.links.get("1.0", "end")
+        cleaned = '\n'.join(line for line in content.split('\n') if line.strip())
+        
+        if content != cleaned:
+            self.links.delete("1.0", "end")
+            self.links.insert("1.0", cleaned)
+
     def select_folder(self):
+        """Abre el diálogo para seleccionar carpeta"""
         folder = filedialog.askdirectory()
         if folder:
             self.path.delete(0, "end")
@@ -317,35 +279,16 @@ class NovaHub(ctk.CTk):
                 widget.configure(text=str(failed))
                 break
 
-    def update_console(self, successful, failed):
-        """Actualiza la consola con resultados finales"""
-        self.console.configure(state="normal")
-        self.console.delete("1.0", "end")
-
-        success_text = "✔ Exitosos:\n"
-        for i, title in enumerate(successful, 1):
-            success_text += f"  {i}. {title}\n"
-
-        failed_text = "\n✖ Fallidos:\n"
-        for i, title in enumerate(failed, 1):
-            failed_text += f"  {i}. {title}\n"
-
-        self.console.insert("end", success_text + failed_text)
-        self.console.configure(state="disabled")
-
     def add_success_to_console(self, title):
-        """Agrega un título exitoso a la consola en vivo"""
+        """Agrega un título exitoso a la consola"""
         with self.console_lock:
             self.console.configure(state="normal")
-            # Buscar la línea de "✖ Fallidos:" e insertar antes
             content = self.console.get("1.0", "end")
             failed_pos = content.find("✖ Fallidos:")
 
             if failed_pos != -1:
-                # Contar líneas antes de "✖ Fallidos:"
                 before_text = content[:failed_pos]
                 line_num = before_text.count('\n') + 1
-                # Insertar sin salto de línea extra, solo el normal
                 self.console.insert(f"{line_num}.0", f"  {len(self.successful_downloads)}. {title}\n")
             else:
                 self.console.insert("end", f"  {len(self.successful_downloads)}. {title}\n")
@@ -355,7 +298,7 @@ class NovaHub(ctk.CTk):
         time.sleep(1)
 
     def add_failed_to_console(self, title):
-        """Agrega un título fallido a la consola en vivo"""
+        """Agrega un título fallido a la consola"""
         with self.console_lock:
             self.console.configure(state="normal")
             self.console.insert("end", f"  {len(self.failed_downloads)}. {title}\n")
@@ -371,7 +314,7 @@ class NovaHub(ctk.CTk):
             self.console.configure(state="disabled")
 
     def clear_console(self):
-        """Limpia la consola y restaura los títulos"""
+        """Limpia la consola"""
         with self.console_lock:
             self.console.configure(state="normal")
             self.console.delete("1.0", "end")
@@ -384,7 +327,6 @@ class NovaHub(ctk.CTk):
             self.show_console_error("Ya hay una descarga en progreso")
             return
 
-        # Obtener enlaces
         links_text = self.links.get("1.0", "end").strip()
         if not links_text:
             self.show_console_error("Por favor ingresa al menos un enlace")
@@ -392,26 +334,22 @@ class NovaHub(ctk.CTk):
 
         urls = [line.strip() for line in links_text.split('\n') if line.strip()]
 
-        # Obtener carpeta de destino y validar
         output_path = self.path.get()
         if not output_path or not os.path.exists(output_path) or not os.path.isdir(output_path):
             self.show_console_error("Por favor selecciona una carpeta válida que exista")
             return
 
-        # Resetear variables
         self.successful_downloads = []
         self.failed_downloads = []
         self.is_downloading = True
         self.download_button.configure(state="disabled")
 
-        # Limpiar consola manteniendo los títulos
         with self.console_lock:
             self.console.configure(state="normal")
             self.console.delete("1.0", "end")
             self.console.insert("end", "✔ Exitosos:\n✖ Fallidos:\n")
             self.console.configure(state="disabled")
 
-        # Iniciar descarga en thread separado
         thread = threading.Thread(target=self._download_thread, args=(urls, output_path))
         thread.daemon = True
         thread.start()
@@ -425,7 +363,6 @@ class NovaHub(ctk.CTk):
                 if not self.is_downloading:
                     break
 
-                # Actualizar estadísticas
                 self.update_stats(
                     queue_count=total - idx,
                     progress="0%",
@@ -433,9 +370,7 @@ class NovaHub(ctk.CTk):
                     failed=len(self.failed_downloads)
                 )
 
-                # Callback de progreso
                 def progress_callback(percent, speed, eta):
-                    # Extraer solo el porcentaje usando regex
                     match = re.search(r'[\d.]+%', percent)
                     percent_only = match.group() if match else "0%"
                     self.update_stats(
@@ -445,17 +380,14 @@ class NovaHub(ctk.CTk):
                         failed=len(self.failed_downloads)
                     )
 
-                # Callback para actualizar el título inmediatamente
                 def title_callback(title):
                     self.video_title.configure(text=title)
 
-                # Descargar
-                success, title = download_youtube_audio(url, output_path, progress_callback, title_callback)
+                success, title = self.downloader.download_audio(url, output_path, progress_callback, title_callback)
 
                 if success and title:
                     self.successful_downloads.append(title)
                     self.add_success_to_console(title)
-                    # Actualizar contador visual de exitosos
                     self.update_stats(
                         queue_count=total - idx - 1,
                         progress="100%",
@@ -465,7 +397,6 @@ class NovaHub(ctk.CTk):
                 else:
                     self.failed_downloads.append(url)
                     self.add_failed_to_console(url)
-                    # Actualizar contador visual de fallidos
                     self.update_stats(
                         queue_count=total - idx - 1,
                         progress="0%",
@@ -479,8 +410,3 @@ class NovaHub(ctk.CTk):
         finally:
             self.is_downloading = False
             self.download_button.configure(state="normal")
-
-
-if __name__ == "__main__":
-    app = NovaHub()
-    app.mainloop()
