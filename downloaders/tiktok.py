@@ -1,105 +1,141 @@
 import os
-import yt_dlp
-from urllib.parse import urlparse
+import requests
 import re
+from urllib.parse import urlparse, parse_qs
 
 from core.base_downloader import Downloader
 
 
 class TikTokDownloader(Downloader):
-    """Descargador de contenido de TikTok"""
+    """Descargador de contenido de TikTok usando API externa"""
     
     def __init__(self):
         super().__init__("TikTok")
+        self.api_url = "https://www.tikwm.com/api/"
     
-    def _limpiar_url_tiktok(self, url: str) -> str:
-        """
-        Normaliza URLs de TikTok de cualquier formato.
-        Maneja: web, mobile, short links, etc.
-        """
+    def _extract_video_id(self, url: str) -> str:
+        """Extrae el ID del video de la URL de TikTok"""
         url = url.strip()
         
-        # Si es una short URL (vm.tiktok.com o vt.tiktok.com), deja que yt-dlp la resuelva
+        # Patrón para URLs normales
+        match = re.search(r'/video/(\d+)', url)
+        if match:
+            return match.group(1)
+        
+        # Si es short link, intentar resolverlo
         if 'vm.tiktok.com' in url or 'vt.tiktok.com' in url:
-            return url
+            try:
+                response = requests.head(url, allow_redirects=True, timeout=10)
+                final_url = response.url
+                match = re.search(r'/video/(\d+)', final_url)
+                if match:
+                    return match.group(1)
+            except:
+                pass
         
-        # Normalizar diferentes dominios a www.tiktok.com
-        url = url.replace('m.tiktok.com', 'www.tiktok.com')
-        url = url.replace('mobile.tiktok.com', 'www.tiktok.com')
-        
-        # Eliminar parámetros de query innecesarios pero mantener el path
-        parsed_url = urlparse(url)
-        clean_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
-        
-        return clean_url
+        return None
     
     def get_video_info(self, url: str):
         """Extrae información del video sin descargar"""
         try:
-            url_limpia = self._limpiar_url_tiktok(url)
-            
-            opciones = {
-                'quiet': True,
-                'no_warnings': True,
-                'skip_download': True,
+            params = {
+                'url': url,
+                'hd': 1
             }
             
-            with yt_dlp.YoutubeDL(opciones) as ydl:
-                info = ydl.extract_info(url_limpia, download=False)
-                
-                return {
-                    'title': info.get('title', 'Sin título'),
-                    'author': info.get('uploader', 'Autor desconocido'),
-                    'duration': info.get('duration', 0),
-                    'thumbnail': info.get('thumbnail', None),
-                    'filesize': info.get('filesize', None),
-                }
+            response = requests.post(self.api_url, data=params, timeout=15)
+            
+            if response.status_code != 200:
+                print(f"Error API: Status {response.status_code}")
+                return None
+            
+            data = response.json()
+            
+            if data.get('code') != 0:
+                print(f"Error API: {data.get('msg', 'Unknown error')}")
+                return None
+            
+            video_data = data.get('data', {})
+            
+            # Calcular tamaño estimado (si hay datos)
+            filesize = None
+            if video_data.get('size'):
+                filesize = video_data['size']
+            
+            return {
+                'title': video_data.get('title', 'Sin título'),
+                'author': video_data.get('author', {}).get('unique_id', 'Desconocido'),
+                'duration': video_data.get('duration', 0),
+                'thumbnail': video_data.get('cover', None),
+                'filesize': filesize,
+                'view_count': video_data.get('play_count', 0),
+                'upload_date': video_data.get('create_time', 0),
+                'width': video_data.get('width', 0),
+                'height': video_data.get('height', 0),
+                'download_url': video_data.get('hdplay', video_data.get('play', '')),
+            }
+            
         except Exception as e:
+            print(f"Error obteniendo info: {e}")
             return None
     
     def download_audio(self, url: str, output_path: str, progress_callback=None, title_callback=None):
         """Descarga video desde TikTok"""
         try:
-            # Limpiar URL
-            url_limpia = self._limpiar_url_tiktok(url)
+            # Obtener información del video
+            info = self.get_video_info(url)
             
-            # Configurar opciones de descarga
-            opciones = {
-                'format': 'best',
-                'outtmpl': os.path.join(output_path, '%(uploader)s_%(id)s.%(ext)s'),
-                'quiet': False,
-                'no_warnings': True,
-                'progress_hooks': [lambda d: self._progress_hook(d, progress_callback)],
-            }
+            if not info or not info.get('download_url'):
+                print("✖ No se pudo obtener la URL de descarga")
+                return False, ''
             
-            # Descargar
-            with yt_dlp.YoutubeDL(opciones) as ydl:
-                info = ydl.extract_info(url_limpia, download=False)
-                title = info.get('uploader', 'TikTok Video')
-                
-                # Llamar callback de título
-                if title_callback:
-                    title_callback(title)
-                
-                # Descargar
-                ydl.download([url_limpia])
-                return True, title
-        
-        except Exception as e:
-            print(f"❌ Error al procesar {url}: {e}")
-            return False, ''
-    
-    def _progress_hook(self, d, progress_callback=None):
-        """Hook para reporte de progreso"""
-        if progress_callback:
-            if d['status'] == 'downloading':
-                percent = d.get('_percent_str', '0%').strip()
-                # Extraer valor numérico del porcentaje
-                match = re.search(r'[\d.]+', percent)
-                if match:
-                    percent_value = float(match.group()) / 100
-                else:
-                    percent_value = 0
-                progress_callback(percent_value)
-            elif d['status'] == 'finished':
+            author = info.get('author', 'tiktok_user')
+            video_id = self._extract_video_id(url) or 'video'
+            
+            # Notificar título
+            title = f"{author}_{video_id}"
+            if title_callback:
+                title_callback(title)
+            
+            # Descargar video
+            download_url = info['download_url']
+            
+            if progress_callback:
+                progress_callback(0.1)
+            
+            response = requests.get(download_url, stream=True, timeout=30)
+            
+            if response.status_code != 200:
+                print(f"✖ Error al descargar: Status {response.status_code}")
+                return False, ''
+            
+            # Obtener tamaño total
+            total_size = int(response.headers.get('content-length', 0))
+            
+            # Guardar archivo
+            filename = f"{author}_{video_id}.mp4"
+            filepath = os.path.join(output_path, filename)
+            
+            downloaded = 0
+            chunk_size = 8192
+            
+            with open(filepath, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    if chunk:
+                        f.write(chunk)
+                        downloaded += len(chunk)
+                        
+                        # Actualizar progreso
+                        if progress_callback and total_size > 0:
+                            progress = downloaded / total_size
+                            progress_callback(progress)
+            
+            if progress_callback:
                 progress_callback(1.0)
+            
+            print(f"✓ Descarga exitosa: {filename}")
+            return True, title
+            
+        except Exception as e:
+            print(f"✖ Error al procesar {url}: {e}")
+            return False, ''
