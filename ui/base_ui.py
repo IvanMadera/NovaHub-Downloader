@@ -1,14 +1,19 @@
-from abc import ABC, abstractmethod
-import customtkinter as ctk
+from abc import ABCMeta, abstractmethod
+from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import QMetaObject
 
 
-class PlatformUI(ABC):
+class ABCQtMeta(type(QWidget), ABCMeta):
+    """Metaclase combinada para resolver conflicto entre ABC y QWidget"""
+    pass
+
+
+class PlatformUI(QWidget, metaclass=ABCQtMeta):
     """Clase base para interfaces de plataforma"""
     
-    def __init__(self, parent_frame: ctk.CTkFrame, platform_name: str):
-        self.parent_frame = parent_frame
+    def __init__(self, parent_widget: QWidget, platform_name: str):
+        super().__init__(parent_widget)
         self.platform_name = platform_name
-        self.main_frame = None
         self.console_lock = None
         
     @abstractmethod
@@ -27,6 +32,6 @@ class PlatformUI(ABC):
         pass
     
     @abstractmethod
-    def get_frame(self) -> ctk.CTkFrame:
-        """Retornar el frame principal de la plataforma"""
+    def get_widget(self) -> QWidget:
+        """Retornar el widget principal de la plataforma"""
         pass

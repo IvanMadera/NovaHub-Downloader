@@ -73,6 +73,7 @@ class YouTubeDownloader(Downloader):
             ydl_opts_info = {
                 'quiet': True,
                 'no_warnings': True,
+                'logger': YTDLPLogger(), # Silenciar errores crudos
             }
 
             with YoutubeDL(ydl_opts_info) as ydl:
@@ -85,14 +86,19 @@ class YouTubeDownloader(Downloader):
             if title_callback:
                 title_callback(original_title)
 
+            # Verificar si existe ffmpeg localmente
+            ffmpeg_local_path = os.path.join(os.getcwd(), 'ffmpeg', 'bin')
+            ffmpeg_location = ffmpeg_local_path if os.path.exists(ffmpeg_local_path) else None
+
             # Ahora descargar
             ydl_opts = {
-                'format': 'bestaudio',
-                'outtmpl': os.path.join(output_path, original_title + '.%(ext)s'),
+                'format': 'bestaudio/best',
+                'outtmpl': os.path.join(output_path, f'{original_title}.%(ext)s'),
                 'postprocessors': [
                     {'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '320'},
                     {'key': 'FFmpegMetadata'},
                 ],
+                'ffmpeg_location': ffmpeg_location,
                 'noplaylist': True,
                 'ignoreerrors': False,
                 'progress_hooks': [lambda d: _progress_hook(d, callback=progress_callback, title_callback=title_callback)],
@@ -109,4 +115,28 @@ class YouTubeDownloader(Downloader):
 
         except Exception as e:
             print(f"❌ Error al procesar {url}: {e}")
+            
+            # Limpieza de archivos residuales (.webm, .m4a, .part, .ytdl)
+            if 'original_title' in locals() and original_title:
+                try:
+                    # Patrones comunes de archivos temporales o no convertidos
+                    extensions_to_clean = ['.webm', '.m4a', '.mp4', '.part', '.ytdl']
+                    
+                    # Intentar borrar archivos que coincidan exactamente con el nombre base
+                    base_filename = os.path.join(output_path, original_title)
+                    
+                    for ext in extensions_to_clean:
+                        file_path = base_filename + ext
+                        if os.path.exists(file_path):
+                            try:
+                                os.remove(file_path)
+                                print(f"🧹 Eliminado residuo: {file_path}")
+                            except OSError:
+                                pass
+                                
+                    # Búsqueda más agresiva si el nombre fue modificado por yt-dlp
+                    # (esto es opcional pero ayuda si yt-dlp saneó el nombre de otra forma)
+                except Exception as cleanup_error:
+                    print(f"⚠️ Error limpiando residuos: {cleanup_error}")
+                    
             return False, ''

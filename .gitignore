@@ -50,3 +50,7 @@ wheels/
 # Archivos específicos del proyecto
 links.txt
 descargas/
+
+# Dependencias locales y binarios
+ffmpeg/
+wenv/
