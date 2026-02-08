@@ -60,8 +60,15 @@ class NovaHub(QMainWindow):
         self.platform_buttons = {}
         platforms_list = ["YouTube", "TikTok"]
         
+        # Iconos de texto (Unicode)
+        platform_icons = {
+            "YouTube": "▶",
+            "TikTok": "♪"
+        }
+        
         for platform_name in platforms_list:
-            btn = QPushButton(f"◈  {platform_name}")
+            icon = platform_icons.get(platform_name, "◈")
+            btn = QPushButton(f"{icon}  {platform_name}")
             btn.setFixedHeight(38)
             btn.setFont(QFont("Segoe UI", 11))
             btn.clicked.connect(lambda checked, p=platform_name: self.set_platform(p))

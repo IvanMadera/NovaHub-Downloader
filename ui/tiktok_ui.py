@@ -42,7 +42,8 @@ class TikTokDownloadThread(QThread):
         """Ejecuta la descarga"""
         try:
             # 1. Obtener información del video primero para mostrar en UI
-            self.console_message.emit("Obteniendo información del video...", "info")
+            self.console_message.emit("➤ Iniciando proceso...", "info")
+            self.console_message.emit("ℹ Obteniendo información del video...", "info")
             info = self.downloader.get_video_info(self.url)
             
             if not info:
@@ -77,6 +78,8 @@ class TikTokDownloadThread(QThread):
             time.sleep(1)
             
             # 3. Iniciar descarga real
+            self.console_message.emit("↓ Descargando contenido...", "info")
+            
             def progress_callback(progress_ratio):
                 # Recibimos un valor de 0.0 a 1.0
                 percent = int(progress_ratio * 100)
@@ -540,9 +543,8 @@ class TikTokUI(PlatformUI):
     @Slot(str, str)
     def add_to_console(self, message, status="info"):
         """Agrega mensaje a la consola"""
-        # Filtro estricto: solo mensaje si es success o error
-        if status not in ["success", "error"]:
-            return
+        # Se permiten todos los mensajes (info, success, error)
+        # para mostrar el proceso completo
             
         with self.console_lock:
             # Agregar timestamp o formato si se desea, por ahora simple
