@@ -48,5 +48,9 @@ wheels/
 .DS_Store
 
 # Archivos específicos del proyecto
-main.py
 links.txt
+descargas/
+
+# Dependencias locales y binarios
+ffmpeg/
+wenv/
