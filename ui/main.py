@@ -50,11 +50,11 @@ class NovaHub(QMainWindow):
 
         # Logo
         logo_label = QLabel("╫ Nova Hub")
-        logo_label.setFont(QFont("Segoe UI", 20, QFont.Bold))
+        logo_label.setFont(QFont("Segoe UI", 16, QFont.Bold))
         logo_label.setAlignment(Qt.AlignCenter)
-        sidebar_layout.addSpacing(28)
+        sidebar_layout.addSpacing(24)
         sidebar_layout.addWidget(logo_label)
-        sidebar_layout.addSpacing(28)
+        sidebar_layout.addSpacing(24)
 
         # Crear botones dinámicamente
         self.platform_buttons = {}
@@ -62,8 +62,8 @@ class NovaHub(QMainWindow):
         
         for platform_name in platforms_list:
             btn = QPushButton(f"◈  {platform_name}")
-            btn.setFixedHeight(44)
-            btn.setFont(QFont("Segoe UI", 14))
+            btn.setFixedHeight(38)
+            btn.setFont(QFont("Segoe UI", 11))
             btn.clicked.connect(lambda checked, p=platform_name: self.set_platform(p))
             
             # Agregar con márgenes
@@ -80,10 +80,10 @@ class NovaHub(QMainWindow):
         
         # ================== FOOTER ==================
         footer_label = QLabel(f"© Copyright {datetime.now().year}")
-        footer_label.setFont(QFont("Segoe UI", 14))
+        footer_label.setFont(QFont("Segoe UI", 10))
         footer_label.setAlignment(Qt.AlignCenter)
         sidebar_layout.addWidget(footer_label)
-        sidebar_layout.addSpacing(20)
+        sidebar_layout.addSpacing(15)
 
         # ================== CONTENT AREA ==================
         self.content_widget = QStackedWidget()
