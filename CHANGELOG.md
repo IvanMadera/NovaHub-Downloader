@@ -2,6 +2,19 @@
 
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 
+## [2026.2.8] - 2026-02-08
+
+### 🎨 Mejoras Visuales
+
+- **Iconos en Sidebar**: Implementación de iconos de texto Unicode para las plataformas:
+  - YouTube: `▶`
+  - TikTok: `♪`
+- **Feedback Visual**: Mejora en los logs de consola para TikTok con iconos de estado (`➤`, `ℹ`, `↓`, `✔`, `✖`).
+
+### 🔧 Mejoras Funcionales
+
+- **Logs Detallados**: Habilitación de mensajes informativos en la consola de la UI de TikTok, permitiendo ver el progreso paso a paso (Inicio -> Info -> Descarga -> Resultado).
+
 ## [2026.1.31] - 2026-02-07
 
 ### ✨ Nueva Interfaz Gráfica (Nova Hub)
@@ -20,7 +33,7 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 
 ### 🔧 Mejoras y Refinamientos
 
-- **Consola Inteligente**: 
+- **Consola Inteligente**:
   - Filtro para mostrar solo éxitos (`✔`) y errores (`✖`).
   - Auto-limpiado de consola al iniciar una nueva descarga.
   - Botón de limpieza manual.
@@ -75,6 +88,7 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 ### 📋 Configuración
 
 **Opciones de `yt-dlp` ajustadas:**
+
 - `format`: `'bestaudio/best'` - Descarga el mejor audio disponible
 - `postprocessors`: Convierte a MP3 con calidad 192kbps
 - `ignoreerrors`: `False` - Muestra errores en lugar de ocultarlos

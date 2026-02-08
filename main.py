@@ -6,4 +6,8 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = NovaHub()
     window.showMaximized()
-    sys.exit(app.exec())
+    try:
+        sys.exit(app.exec())
+    except KeyboardInterrupt:
+        print("Aplicación cerrada por el usuario.")
+        sys.exit(0)
