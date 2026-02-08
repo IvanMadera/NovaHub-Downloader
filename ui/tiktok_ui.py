@@ -6,6 +6,7 @@ from PySide6.QtCore import Qt, QThread, Signal, Slot
 from PySide6.QtGui import QFont, QPixmap, QImage
 import os
 import requests
+import time
 from datetime import datetime
 from threading import Lock
 
@@ -71,6 +72,9 @@ class TikTokDownloadThread(QThread):
                         self.preview_updated.emit(thumb_response.content)
                 except:
                     pass
+            
+            # Pausa de 1 segundos para ver la info (solicitado por user)
+            time.sleep(1)
             
             # 3. Iniciar descarga real
             def progress_callback(progress_ratio):
@@ -166,6 +170,35 @@ class TikTokDownloadThread(QThread):
         except:
             return "N/A"
 
+
+
+class AspectRatioLabel(QLabel):
+    """Label que mantiene el aspect ratio de su contenido (imagen)"""
+    def __init__(self, text="", parent=None):
+        super().__init__(text, parent)
+        self.setMinimumSize(1, 1)
+        self.setScaledContents(False) 
+        self.pixmap_original = None
+        self.setAlignment(Qt.AlignCenter)
+
+    def setPixmap(self, pixmap):
+        self.pixmap_original = pixmap
+        self.update_pixmap()
+
+    def resizeEvent(self, event):
+        self.update_pixmap()
+        super().resizeEvent(event)
+
+    def update_pixmap(self):
+        if self.pixmap_original and not self.pixmap_original.isNull():
+            # Escalar al tamaño actual del widget manteniendo ratio
+            scaled = self.pixmap_original.scaled(
+                self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
+            )
+            super().setPixmap(scaled)
+        else:
+            # Si no hay imagen, quizas mostrar texto o nada
+            pass
 
 class TikTokUI(PlatformUI):
     
@@ -342,26 +375,29 @@ class TikTokUI(PlatformUI):
         
         content_layout.addLayout(left_column, 6) # 60% width
         
-        # -------- RIGHT COLUMN (Large Preview) --------
+        # -------- RIGHT COLUMN (Responsive Preview) --------
         preview_container = QWidget()
         preview_layout = QVBoxLayout(preview_container)
         preview_layout.setContentsMargins(0, 0, 0, 0)
-        preview_layout.setAlignment(Qt.AlignTop) # Align everything to top
         
-        # Title for preview - Centered
+        # Title for preview
         preview_title = QLabel("Vista previa")
         preview_title.setAlignment(Qt.AlignCenter)
         preview_layout.addWidget(preview_title)
         
-        self.preview_label = QLabel("Sin vista previa")
-        # Reuse size 270x480
-        self.preview_label.setFixedSize(270, 480) 
-        self.preview_label.setAlignment(Qt.AlignCenter)
+        # Label responsivo
+        self.preview_label = AspectRatioLabel("Sin vista previa")
+        self.preview_label.setFixedWidth(270) # Fix width as requested
         self.preview_label.setStyleSheet(f"background-color: {BG_PANEL}; border-radius: {RADIUS}px; color: {TEXT_SEC};")
         
+        # Dejamos que se expanda en vertical
+        self.preview_label.setSizePolicy(
+            self.preview_label.sizePolicy().horizontalPolicy(),
+            self.preview_label.sizePolicy().verticalPolicy()
+        )
+        
         # Center the preview label horizontally in the layout
-        preview_layout.addWidget(self.preview_label, 0, Qt.AlignHCenter)
-        preview_layout.addStretch() # Push up
+        preview_layout.addWidget(self.preview_label, 1, Qt.AlignHCenter) # Stretch 1 para ocupar todo el alto
         
         content_layout.addWidget(preview_container, 4) # 40% width
         
@@ -492,13 +528,8 @@ class TikTokUI(PlatformUI):
         try:
             pixmap = QPixmap()
             if pixmap.loadFromData(image_data):
-                # Escalar manteniendo aspect ratio para TikTok (retrato)
-                scaled_pixmap = pixmap.scaled(
-                    270, 480, 
-                    Qt.KeepAspectRatio, 
-                    Qt.SmoothTransformation
-                )
-                self.preview_label.setPixmap(scaled_pixmap)
+                # Usar AspectRatioLabel para mantener el ratio automáticamente
+                self.preview_label.setPixmap(pixmap)
             else:
                 self.preview_label.setText("Error al cargar imagen")
         except Exception as e:
