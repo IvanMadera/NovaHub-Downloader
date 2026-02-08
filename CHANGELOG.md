@@ -2,7 +2,33 @@
 
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 
-## [Versión Actual] - 2025-12-07
+## [2026.1.31] - 2026-02-07
+
+### ✨ Nueva Interfaz Gráfica (Nova Hub)
+
+- **Migración a GUI**: El proyecto ahora cuenta con una interfaz gráfica moderna construida con **PySide6**.
+- **Sidebar Dinámico**: Navegación lateral para cambiar entre plataformas (YouTube, TikTok).
+- **Diseño Premium**: Paleta de colores consistente, bordes redondeados, animaciones sutiles y tipografía optimizada.
+- **Multi-plataforma**: Soporte unificado para múltiples servicios de descarga bajo el mismo techo.
+
+### 📱 Integración de TikTok
+
+- **Descarga Directa**: Implementación completa de `TikTokDownloader` usando la API de tikwm.
+- **Información del Video**: Visualización de metadatos (Autor, Fecha, Duración, Descripción).
+- **Vista Previa**: Carga automática de la miniatura del video antes de descargar.
+- **Progreso Real**: Barra de progreso vinculada al estado real de la descarga.
+
+### 🔧 Mejoras y Refinamientos
+
+- **Consola Inteligente**: 
+  - Filtro para mostrar solo éxitos (`✔`) y errores (`✖`).
+  - Auto-limpiado de consola al iniciar una nueva descarga.
+  - Botón de limpieza manual.
+- **Gestión de Carpetas**: Selector de directorios nativo para elegir dónde guardar los archivos.
+- **Sidebar Optimizado**: Reducción de tamaños de fuente y ajustes de espaciado para un balance visual profesional.
+- **Thread-Safety**: Todas las descargas se ejecutan en hilos secundarios para mantener la fluidez de la UI.
+
+## [Versión Anterior] - 2025-12-07
 
 ### ✨ Características Añadidas
 

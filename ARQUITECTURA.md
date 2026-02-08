@@ -4,21 +4,31 @@
 
 ```
 YT-download/
-├── main.py                          # Punto de entrada
-├── requirements.txt                 # Dependencias
-├── assets/                          # Imágenes y recursos
-│   └── NovaHub_title.png
+├── main.py                          # Punto de entrada (Lanza NovaHub)
+├── requirements.txt                 # Dependencias (PySide6, requests, etc.)
 ├── core/                            # Clases base y utilidades
 │   ├── __init__.py
-│   └── base_downloader.py          # Clase abstracta Downloader
-├── downloaders/                     # Implementaciones de descargadores
+│   └── base_downloader.py          # Clase abstracta Downloader (Base para YT/TikTok)
+├── downloaders/                     # Lógica de descarga (Backend)
 │   ├── __init__.py
-│   ├── youtube.py                  # YouTubeDownloader
-│   └── tiktok.py                   # TikTokDownloader (esqueleto)
-└── ui/                              # Interfaz gráfica
+│   ├── youtube.py                  # YouTubeDownloader (yt-dlp)
+│   └── tiktok.py                   # TikTokDownloader (API tikwm)
+└── ui/                              # Interfaz gráfica (Frontend)
     ├── __init__.py
-    └── main.py                     # Clase NovaHub
+    ├── main.py                     # Ventana principal NovaHub y Sidebar
+    ├── base_ui.py                  # Clase base PlatformUI para las vistas
+    ├── youtube_ui.py               # Vista específica de YouTube
+    └── tiktok_ui.py                # Vista específica de TikTok
 ```
+
+## Arquitectura de la UI
+
+El proyecto utiliza un patrón de **Vistas Intercambiables** gestionadas por un `QStackedWidget` en `ui/main.py`:
+
+1.  **NovaHub (ui/main.py)**: Administra el Sidebar, el Footer y el contenedor principal.
+2.  **PlatformUI (ui/base_ui.py)**: Clase base que define el contrato para cualquier plataforma nueva (método `build()`).
+3.  **Hilos de Descarga**: Tanto YouTube como TikTok ejecutan sus descargas en hilos separados (`QThread`) para evitar que la interfaz se congele.
+4.  **Comunicación**: Se utilizan `Signals` y `Slots` de PySide6 para actualizar la UI (progreso, consola, metadatos) desde los hilos de descarga.
 
 ## Cómo agregar una nueva plataforma
 
