@@ -129,7 +129,7 @@ class YouTubeUI(PlatformUI):
         main_layout.setColumnStretch(1, 0)
         
         # ================== 1. TÍTULO (Fila 0) ==================
-        title = QLabel("Descarga de contenido - YouTube")
+        title = QLabel("DESCARGA DE CONTENIDO - YOUTUBE")
         title.setFont(QFont("Segoe UI", 20, QFont.Bold))
         title.setStyleSheet(f"color: white; background-color: transparent;")
         main_layout.addWidget(title, 0, 0, 1, 2)

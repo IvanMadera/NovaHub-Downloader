@@ -223,6 +223,7 @@ class TikTokUI(PlatformUI):
         # Título
         title = QLabel("DESCARGA DE CONTENIDO - TIKTOK")
         title.setFont(QFont("Segoe UI", 20, QFont.Bold)) 
+        title.setStyleSheet("color: white; background-color: transparent;")
         main_layout.addWidget(title)
         
         # ================== CONFIGURATION AREA (URL -> Dest -> Download) ==================

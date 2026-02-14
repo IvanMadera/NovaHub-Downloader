@@ -33,7 +33,7 @@ class QRUI(PlatformUI):
         self.layout.setSpacing(15)
 
         # Header
-        header = QLabel("Generador de Códigos QR")
+        header = QLabel("GENERADOR DE CÓDIGOS QR")
         header.setFont(QFont("Segoe UI", 18, QFont.Bold))
         header.setStyleSheet(f"color: {TEXT_MAIN};")
         self.layout.addWidget(header)
@@ -46,23 +46,37 @@ class QRUI(PlatformUI):
         self.type_combo = QComboBox()
         self.type_combo.addItems(["URL", "JSON", "WiFi"])
         self.type_combo.currentIndexChanged.connect(self.on_type_changed)
+        self.type_combo.setFixedWidth(100)
         self.type_combo.setStyleSheet(f"""
             QComboBox {{
                 background-color: {BG_PANEL};
                 color: {TEXT_MAIN};
                 padding: 8px 10px 8px 15px;
                 border-radius: 8px;
-                border: 1px solid #333;
                 min-width: 80px;
             }}
             QComboBox::drop-down {{
                 subcontrol-origin: padding;
                 subcontrol-position: top right;
                 width: 30px;
-                border-left: 1px solid #333;
                 border-top-right-radius: 8px;
                 border-bottom-right-radius: 8px;
                 background-color: transparent;
+            }}
+            QComboBox::down-arrow {{
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-top: 5px solid {TEXT_SEC};
+                width: 0;
+                height: 0;
+                margin-right: 15px;
+            }}
+            QComboBox QAbstractItemView {{
+                background-color: {BG_PANEL};
+                color: {TEXT_MAIN};
+                selection-background-color: {ACCENT};
+                border-radius: 8px;
+                outline: none;
             }}
         """)
         
@@ -82,7 +96,6 @@ class QRUI(PlatformUI):
             QFrame {{
                 background-color: {BG_PANEL};
                 border-radius: 14px;
-                border: 1px solid #333;
             }}
         """)
         text_input_layout = QVBoxLayout(self.text_input_frame)
@@ -114,7 +127,6 @@ class QRUI(PlatformUI):
         self.pass_frame.setStyleSheet(f"""
             QFrame {{
                 background-color: {BG_PANEL};
-                border: 1px solid #333;
                 border-radius: 5px;
             }}
         """)
@@ -203,11 +215,10 @@ class QRUI(PlatformUI):
         self.qr_label.setText("El QR aparecerá aquí")
         self.qr_label.setStyleSheet(f"""
             QLabel {{
-                background-color: white; 
+                background-color: {BG_PANEL}; 
                 border-radius: 14px; 
-                border: 2px solid #333;
                 padding: 10px;
-                color: black;
+                color: {TEXT_SEC};
             }}
         """)
         
@@ -243,28 +254,28 @@ class QRUI(PlatformUI):
         console_container = QWidget()
         console_layout = QVBoxLayout(console_container)
         console_layout.setContentsMargins(0, 0, 0, 0)
+        console_layout.setSpacing(15)
         
         console_header_layout = QHBoxLayout()
-        console_label = QLabel("Consola de Estado")
-        console_label.setStyleSheet(f"color: {TEXT_SEC}; font-weight: bold;")
+        console_label = QLabel("Resultado de la consola")
+        console_label.setStyleSheet(f"color: {TEXT_SEC};")
         
-        self.clear_btn = QPushButton("Limpiar Consola")
+        self.clear_btn = QPushButton("Limpiar consola")
         self.clear_btn.setCursor(Qt.PointingHandCursor)
         self.clear_btn.clicked.connect(self.clear_console)
-        self.clear_btn.setFixedWidth(140)
-        self.clear_btn.setFixedHeight(32)
-        self.clear_btn.setFont(QFont("Segoe UI", 10))
+        self.clear_btn.setFixedSize(120, 30)
+        self.clear_btn.setFont(QFont("Segoe UI", 9))
         self.clear_btn.setStyleSheet(f"""
             QPushButton {{
-                background-color: #2D3748;
-                color: {TEXT_SEC};
+                background-color: #1C2230;
+                color: white;
                 border: none;
                 border-radius: 8px;
                 text-align: center;
                 padding: 5px;
             }}
             QPushButton:hover {{
-                background-color: #4A5568;
+                background-color: #252B3A;
             }}
         """)
         
@@ -276,9 +287,8 @@ class QRUI(PlatformUI):
         console_wrapper = QFrame()
         console_wrapper.setStyleSheet(f"""
             QFrame {{
-                background-color: #000;
+                background-color: {BG_PANEL};
                 border-radius: 14px;
-                border: 1px solid #333;
             }}
         """)
         console_wrapper_layout = QVBoxLayout(console_wrapper)
@@ -290,9 +300,9 @@ class QRUI(PlatformUI):
         self.console.setStyleSheet(f"""
             QTextEdit {{
                 background-color: transparent;
-                color: #0F0;
-                font-family: Consolas, monospace;
-                font-size: 12px;
+                color: #FFFFFF;
+                font-family: Segoe UI, sans-serif;
+                font-size: 13px;
                 border: none;
             }}
         """)
@@ -313,7 +323,6 @@ class QRUI(PlatformUI):
                 background-color: {BG_PANEL};
                 color: {TEXT_MAIN};
                 padding: 8px;
-                border: 1px solid #333;
                 border-radius: 5px;
             }}
         """)
@@ -366,9 +375,8 @@ class QRUI(PlatformUI):
                 self.text_input.setPlaceholderText("https://ejemplo.com")
 
     def log_message(self, message, is_error=False):
-        color = "#FF5555" if is_error else "#50FA7B"
-        prefix = "[ERROR]" if is_error else "[SUCCESS]"
-        self.console.append(f'<span style="color:{color};"><b>{prefix}</b> {message}</span>')
+        icon = "✖" if is_error else "✔"
+        self.console.append(f'<span style="color: white;">{icon} {message}</span>')
         # Scroll to bottom
         sb = self.console.verticalScrollBar()
         sb.setValue(sb.maximum())
@@ -467,10 +475,27 @@ class QRUI(PlatformUI):
             pixmap = QPixmap.fromImage(qt_img)
             
             # Escalar considerando el padding (300 - 20 = 280)
+            self.qr_label.setStyleSheet(f"""
+                QLabel {{
+                    background-color: white; 
+                    border-radius: 14px; 
+                    padding: 10px;
+                }}
+            """)
             self.qr_label.setPixmap(pixmap.scaled(280, 280, Qt.KeepAspectRatio, Qt.SmoothTransformation))
             self.log_message("Código QR generado exitosamente.")
             
         except Exception as e:
+            # Revertir a fondo oscuro en caso de error
+            self.qr_label.setStyleSheet(f"""
+                QLabel {{
+                    background-color: {BG_PANEL}; 
+                    border-radius: 14px; 
+                    padding: 10px;
+                    color: {TEXT_SEC};
+                }}
+            """)
+            self.qr_label.setText("Error en generación")
             self.log_message(str(e), is_error=True)
 
     def save_qr_image(self):
