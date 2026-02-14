@@ -2,6 +2,22 @@
 
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 
+## [2026.2.9] - 2026-02-09
+
+### ✨ Nueva Funcionalidad: Generador de Códigos QR
+
+- **Generación de QR**: Soporte para URLs, texto JSON y credenciales WiFi (SSID, contraseña, seguridad).
+- **Conversión JSON**: Acepta tanto JSON estricto como objetos JavaScript (sin comillas en claves).
+- **Descarga PNG**: Exportación del código QR generado en resolución 720×720 píxeles con diálogo de guardado nativo.
+- **Consola de estado**: Mensajes de validación, errores y éxito en tiempo real.
+
+### 🎨 Mejoras Visuales
+
+- **Bordes redondeados**: Aplicación consistente de `border-radius: 14px` en áreas de entrada, consola y visualización del QR.
+- **ComboBox refinado**: Corrección de esquinas cortadas en el selector de tipo de contenido.
+- **Toggle de contraseña WiFi**: Botón "Mostrar/Ocultar" para verificar la contraseña ingresada.
+- **Icono QR en sidebar**: Nuevo icono `⊞` para la sección de generación de códigos QR.
+
 ## [2026.2.8] - 2026-02-08
 
 ### 🎨 Mejoras Visuales
@@ -41,84 +57,29 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 - **Sidebar Optimizado**: Reducción de tamaños de fuente y ajustes de espaciado para un balance visual profesional.
 - **Thread-Safety**: Todas las descargas se ejecutan en hilos secundarios para mantener la fluidez de la UI.
 
-## [Versión Anterior] - 2025-12-07
+## [1.0.0] - 2025-12-07
 
-### ✨ Características Añadidas
+### ✨ Nueva Funcionalidad: Descargador de YouTube (CLI)
 
-- **Lectura automática de enlaces**: Lee URLs desde `links.txt` (un enlace por línea) en lugar de pedirlas por terminal
+- **Lectura automática de enlaces**: Lee URLs desde `links.txt` (un enlace por línea) en lugar de pedirlas por terminal.
 - **Formateo automático de nombres de archivo**:
-  - Elimina caracteres especiales problemáticos
-  - Convierte guiones bajos y guiones en espacios
-  - Capitaliza cada palabra
-  - Elimina emojis
-  - Consolida espacios múltiples en espacios únicos
-  - Preserva estructura "Artista / Canción" convirtiéndola a "Artista - Canción"
-
-- **Logger personalizado**: Filtra warnings conocidos de `yt-dlp`:
-  - Warnings de formatos `web_safari` / `SABR`
-  - Warnings sobre falta de runtime JavaScript
-
-- **Barra de progreso mejorada**: Muestra:
-  - Porcentaje descargado
-  - Velocidad de descarga
-  - Tiempo estimado (ETA)
-  - Nombre del archivo
-
-- **Resumen final**: Al terminar todas las descargas, muestra:
-  - Total de canciones procesadas
-  - ✅ Estado de éxito con ruta completa (carpeta/nombre.mp3)
-  - ❌ Estado de error para descargas fallidas
-
-- **Verificación de dependencias**: Comprueba al inicio si `ffmpeg` está instalado
+  - Elimina caracteres especiales, emojis y espacios duplicados.
+  - Capitaliza cada palabra y preserva estructura "Artista - Canción".
+- **Logger personalizado**: Filtra warnings conocidos de `yt-dlp` (`web_safari`, `SABR`, falta de runtime JS).
+- **Barra de progreso mejorada**: Muestra porcentaje, velocidad, ETA y nombre del archivo.
+- **Resumen final**: Total procesado con estado de éxito (✅) o error (❌) por archivo.
+- **Verificación de dependencias**: Comprueba al inicio si `ffmpeg` está instalado.
 
 ### 🔧 Mejoras
 
-- Desactivación de `restrictfilenames` para permitir nombres personalizados
-- Renombramiento de archivos después de la conversión a MP3
-- Manejo mejorado de excepciones con mensajes claros
-- Organización de código con funciones auxiliares bien documentadas
+- Desactivación de `restrictfilenames` para permitir nombres personalizados.
+- Renombramiento de archivos después de la conversión a MP3.
+- Manejo mejorado de excepciones con mensajes claros.
+- Organización de código con funciones auxiliares bien documentadas.
 
 ### 🐛 Correcciones
 
-- Corregido problema de nombres con caracteres especiales que no se formateaban correctamente
-- Solucionado issue donde la ruta no separaba correctamente carpeta/archivo
-- Filtrado de warnings innecesarios que ensuciaban la salida
-- Validación de archivos antes de renombrar para evitar conflictos
-
-### 📋 Configuración
-
-**Opciones de `yt-dlp` ajustadas:**
-
-- `format`: `'bestaudio/best'` - Descarga el mejor audio disponible
-- `postprocessors`: Convierte a MP3 con calidad 192kbps
-- `ignoreerrors`: `False` - Muestra errores en lugar de ocultarlos
-- `restrictfilenames`: `False` - Permite nombres personalizados
-- `extractor_args`: `youtube:player_client=default` - Evita warnings de extractores
-
-### 📦 Dependencias
-
-- `yt-dlp` >= 2025.11.12
-- `ffmpeg` (requerido para conversión a MP3)
-- Python 3.6+
-
-### 📝 Estructura del Proyecto
-
-```
-YT-download/
-├── download.py          # Script principal
-├── links.txt            # Archivo con URLs (una por línea)
-├── requirements.txt     # Dependencias Python
-├── musica/              # Carpeta de salida (se crea automáticamente)
-├── README.md            # Documentación
-└── CHANGELOG.md         # Este archivo
-```
-
-### 🚀 Uso
-
-1. Editar `links.txt` y agregar URLs de YouTube (una por línea)
-2. Ejecutar: `python download.py`
-3. Los archivos se guardarán formateados en `musica/`
-
-### 🔄 Historial de Versiones
-
-**v1.0.0** - Versión inicial completa con todas las características mencionadas
+- Corregido problema de nombres con caracteres especiales que no se formateaban correctamente.
+- Solucionado issue donde la ruta no separaba correctamente carpeta/archivo.
+- Filtrado de warnings innecesarios que ensuciaban la salida.
+- Validación de archivos antes de renombrar para evitar conflictos.

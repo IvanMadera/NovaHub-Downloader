@@ -9,6 +9,7 @@ from threading import Lock
 
 from ui.youtube_ui import YouTubeUI
 from ui.tiktok_ui import TikTokUI
+from ui.qr_ui import QRUI
 
 # ===== PALETA =====
 BG_MAIN  = "#0E1116"
@@ -58,12 +59,13 @@ class NovaHub(QMainWindow):
 
         # Crear botones dinámicamente
         self.platform_buttons = {}
-        platforms_list = ["YouTube", "TikTok"]
+        platforms_list = ["YouTube", "TikTok", "QR"]
         
         # Iconos de texto (Unicode)
         platform_icons = {
             "YouTube": "▶",
-            "TikTok": "♪"
+            "TikTok": "♪",
+            "QR": "⊞"
         }
         
         for platform_name in platforms_list:
@@ -104,6 +106,10 @@ class NovaHub(QMainWindow):
         self.platform_uis["TikTok"].build()
         self.content_widget.addWidget(self.platform_uis["TikTok"])
 
+        self.platform_uis["QR"] = QRUI(self.content_widget, self.console_lock)
+        self.platform_uis["QR"].build()
+        self.content_widget.addWidget(self.platform_uis["QR"])
+
         # Agregar al layout principal
         main_layout.addWidget(sidebar)
         main_layout.addWidget(self.content_widget)
@@ -127,6 +133,7 @@ class NovaHub(QMainWindow):
             
             QLabel {{
                 color: {TEXT_SEC};
+                background: transparent;
             }}
             
             QPushButton {{
