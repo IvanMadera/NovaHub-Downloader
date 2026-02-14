@@ -18,11 +18,18 @@
 - **Sin Marca de Agua**: Descarga de videos limpios listos para usar.
 - **Barra de Progreso**: Seguimiento detallado del estado de descarga.
 
+### ⊞ Generador de Códigos QR
+
+- **Múltiples formatos**: Soporte para URLs, JSON y credenciales WiFi.
+- **Vista previa**: Visualización del código QR generado en tiempo real.
+- **Descarga PNG**: Exportación del código QR en 720×720 píxeles con diálogo de guardado.
+- **Consola de estado**: Mensajes de validación, errores y éxito.
+
 ## 📋 Requisitos
 
 - **Python 3.8+**
 - **FFmpeg**: Requerido para la conversión de audio en YouTube.
-- **Dependencias**: Listadas en `requirements.txt` (PySide6, requests, yt-dlp).
+- **Dependencias**: Listadas en `requirements.txt` (PySide6, requests, yt-dlp, qrcode, Pillow).
 
 ## 🚀 Instalación y Uso
 
@@ -49,6 +56,7 @@
 
 - `main.py`: Punto de entrada de la aplicación.
 - `ui/`: Contiene toda la lógica de la interfaz gráfica y vistas.
+  - `qr_ui.py`: Vista del generador de códigos QR.
 - `downloaders/`: Backend con los scripts de descarga para cada plataforma.
 - `core/`: Clases base y abstracciones del sistema.
 
@@ -63,5 +71,5 @@ Este proyecto es únicamente para uso educativo y personal. Asegúrate de:
 ---
 
 **Autor**: [Ivan Madera](https://github.com/IvanMadera)  
-**Versión**: 2026.2.8  
+**Versión**: 2026.2.9  
 **Última actualización**: Febrero 2026
