@@ -20,6 +20,7 @@ ACCENT   = "#3B5998"
 SUCCESS  = "#9ECE6A"
 TEXT_SEC = "#A9B1D6"
 ERROR    = "#F7768E"
+TEXT_MAIN = "#FFFFFF"
 RADIUS   = 14
 
 
@@ -223,6 +224,7 @@ class TikTokUI(PlatformUI):
         # Título
         title = QLabel("DESCARGA DE CONTENIDO - TIKTOK")
         title.setFont(QFont("Segoe UI", 20, QFont.Bold)) 
+        title.setStyleSheet(f"color: {TEXT_MAIN}; background-color: transparent;")
         main_layout.addWidget(title)
         
         # ================== CONFIGURATION AREA (URL -> Dest -> Download) ==================
@@ -276,8 +278,9 @@ class TikTokUI(PlatformUI):
         dest_layout.addWidget(self.path, 1)
         
         choose_button = QPushButton("Elegir")
-        choose_button.setFixedWidth(90)
+        choose_button.setFixedWidth(100)
         choose_button.setFixedHeight(40)
+        choose_button.setFont(QFont("Segoe UI", 10))
         choose_button.clicked.connect(self.select_folder)
         dest_layout.addWidget(choose_button)
         
@@ -346,8 +349,8 @@ class TikTokUI(PlatformUI):
         console_header.addStretch()
         
         clear_button = QPushButton("Limpiar consola")
-        clear_button.setFixedSize(120, 30)
-        clear_button.setFont(QFont("Segoe UI", 9))
+        clear_button.setFixedSize(120, 32)
+        clear_button.setFont(QFont("Segoe UI", 10))
         clear_button.clicked.connect(self.clear_console)
         console_header.addWidget(clear_button)
         
