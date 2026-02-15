@@ -34,7 +34,7 @@ class QRUI(PlatformUI):
 
         # Header
         header = QLabel("GENERADOR DE CÓDIGOS QR")
-        header.setFont(QFont("Segoe UI", 18, QFont.Bold))
+        header.setFont(QFont("Segoe UI", 20, QFont.Bold))
         header.setStyleSheet(f"color: {TEXT_MAIN};")
         self.layout.addWidget(header)
 
@@ -127,7 +127,7 @@ class QRUI(PlatformUI):
         self.pass_frame.setStyleSheet(f"""
             QFrame {{
                 background-color: {BG_PANEL};
-                border-radius: 5px;
+                border-radius: 8px;
             }}
         """)
         pass_layout = QHBoxLayout(self.pass_frame)
@@ -194,7 +194,7 @@ class QRUI(PlatformUI):
                 text-align: center;
             }}
             QPushButton:hover {{
-                background-color: #4B6CB7;
+                background-color: #6487E5;
             }}
         """)
         self.layout.addWidget(self.generate_btn)
@@ -263,8 +263,8 @@ class QRUI(PlatformUI):
         self.clear_btn = QPushButton("Limpiar consola")
         self.clear_btn.setCursor(Qt.PointingHandCursor)
         self.clear_btn.clicked.connect(self.clear_console)
-        self.clear_btn.setFixedSize(120, 30)
-        self.clear_btn.setFont(QFont("Segoe UI", 9))
+        self.clear_btn.setFixedSize(120, 32)
+        self.clear_btn.setFont(QFont("Segoe UI", 10))
         self.clear_btn.setStyleSheet(f"""
             QPushButton {{
                 background-color: #1C2230;
@@ -323,7 +323,7 @@ class QRUI(PlatformUI):
                 background-color: {BG_PANEL};
                 color: {TEXT_MAIN};
                 padding: 8px;
-                border-radius: 5px;
+                border-radius: 8px;
             }}
         """)
 

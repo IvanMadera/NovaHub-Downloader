@@ -19,6 +19,7 @@ ACCENT   = "#3B5998"
 SUCCESS  = "#9ECE6A"
 TEXT_SEC = "#A9B1D6"
 ERROR    = "#F7768E"
+TEXT_MAIN = "#FFFFFF"
 RADIUS   = 14
 
 
@@ -131,7 +132,7 @@ class YouTubeUI(PlatformUI):
         # ================== 1. TÍTULO (Fila 0) ==================
         title = QLabel("DESCARGA DE CONTENIDO - YOUTUBE")
         title.setFont(QFont("Segoe UI", 20, QFont.Bold))
-        title.setStyleSheet(f"color: white; background-color: transparent;")
+        title.setStyleSheet(f"color: {TEXT_MAIN}; background-color: transparent;")
         main_layout.addWidget(title, 0, 0, 1, 2)
         
         # ================== 2. LINKS Y PREVIEW (Fila 1) ==================
@@ -281,7 +282,7 @@ class YouTubeUI(PlatformUI):
         dest_layout.addWidget(dest_label)
         
         self.path = QLineEdit("C:/Descargas")
-        self.path.setFixedHeight(36)
+        self.path.setFixedHeight(40)
         self.path.setReadOnly(True)  # Solo lectura, solo se cambia con el botón "Elegir"
         # Redondear menos el campo de destino (ej. 8px en lugar de RADIUS)
         # Forzar color de selección para evitar el rojo por defecto del sistema
@@ -301,7 +302,8 @@ class YouTubeUI(PlatformUI):
         
         choose_button = QPushButton("Elegir")
         choose_button.setFixedWidth(100)
-        choose_button.setFixedHeight(36)
+        choose_button.setFixedHeight(40)
+        choose_button.setFont(QFont("Segoe UI", 10))
         choose_button.clicked.connect(self.select_folder)
         # Homologar radius para botón Elegir (MENOS REDONDEADO)
         choose_button.setStyleSheet(f"""
@@ -332,8 +334,7 @@ class YouTubeUI(PlatformUI):
         header_layout.addStretch()
         
         clear_button = QPushButton("Limpiar consola")
-        clear_button.setFixedWidth(140)
-        clear_button.setFixedHeight(32)
+        clear_button.setFixedSize(120, 32)
         clear_button.setFont(QFont("Segoe UI", 10))
         clear_button.clicked.connect(self.clear_console)
         # Forzar estilos específicos para este botón (MENOS REDONDEADO)
