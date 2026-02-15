@@ -71,5 +71,5 @@ Este proyecto es únicamente para uso educativo y personal. Asegúrate de:
 ---
 
 **Autor**: [Ivan Madera](https://github.com/IvanMadera)  
-**Versión**: 2026.2.9  
+**Versión**: 2026.2.14  
 **Última actualización**: Febrero 2026

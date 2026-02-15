@@ -2,6 +2,22 @@
 
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 
+## [2026.2.14] - 2026-02-14
+
+### 🎨 Estandarización de UI (Global)
+
+- **Botones Secundarios Unificados**:
+  - Botón "Limpiar consola": Estandarizado a **120x32px**.
+  - Botón "Elegir" (Ruta): Estandarizado a **100x40px**.
+  - Fuentes: Unificadas a **Segoe UI 10px Normal** (sin negrita) para una apariencia más limpia y consistente.
+- **Tipografía**:
+  - Títulos de módulos estandarizados a **Segoe UI 20px Bold** con color `TEXT_MAIN` (#FFFFFF).
+- **Consistencia Visual**:
+  - Homologación de bordes redondeados (8px para elementos de entrada/botones pequeños).
+  - Corrección de discrepancias en colores de hover (`#6487E5`) en todos los módulos (TikTok, YouTube, QR).
+- **YouTube UI**:
+  - Se mantiene el botón de descarga "Gigante" como característica distintiva, pero se alinean los demás controles al estándar global.
+
 ## [2026.2.9] - 2026-02-09
 
 ### ✨ Nueva Funcionalidad: Generador de Códigos QR
