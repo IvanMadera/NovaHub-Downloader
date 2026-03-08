@@ -18,6 +18,13 @@
 - **Sin Marca de Agua**: Descarga de videos limpios listos para usar.
 - **Barra de Progreso**: Seguimiento detallado del estado de descarga.
 
+### 📸 Instagram
+
+- **Múltiples Formatos**: Descarga de Reels, Videos, Fotos y Carruseles (Sidecars).
+- **Extracción de Máxima Calidad**: Selección automática de la máxima resolución disponible (`display_url`).
+- **Galería Interactiva**: Visualización de miniaturas de carruseles para selección individual antes de descargar.
+- **Integración Nativa**: Extracción de URLs vía `instaloader` adaptada para la descarga asíncrona fluida.
+
 ### ⊞ Generador de Códigos QR
 
 - **Múltiples formatos**: Soporte para URLs, JSON y credenciales WiFi.
@@ -29,7 +36,7 @@
 
 - **Python 3.8+**
 - **FFmpeg**: Requerido para la conversión de audio en YouTube.
-- **Dependencias**: Listadas en `requirements.txt` (PySide6, requests, yt-dlp, qrcode, Pillow).
+- **Dependencias**: Listadas en `requirements.txt` (PySide6, requests, yt-dlp, qrcode, Pillow, instaloader).
 
 ## 🚀 Instalación y Uso
 
@@ -71,5 +78,5 @@ Este proyecto es únicamente para uso educativo y personal. Asegúrate de:
 ---
 
 **Autor**: [Ivan Madera](https://github.com/IvanMadera)  
-**Versión**: 2026.2.14  
-**Última actualización**: Febrero 2026
+**Versión**: 2026.3.7  
+**Última actualización**: Marzo 2026
