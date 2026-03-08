@@ -9,6 +9,7 @@ from threading import Lock
 
 from ui.youtube_ui import YouTubeUI
 from ui.tiktok_ui import TikTokUI
+from ui.instagram_ui import InstagramUI
 from ui.qr_ui import QRUI
 
 # ===== PALETA =====
@@ -59,18 +60,10 @@ class NovaHub(QMainWindow):
 
         # Crear botones dinámicamente
         self.platform_buttons = {}
-        platforms_list = ["YouTube", "TikTok", "QR"]
-        
-        # Iconos de texto (Unicode)
-        platform_icons = {
-            "YouTube": "▶",
-            "TikTok": "♪",
-            "QR": "⊞"
-        }
+        platforms_list = ["YouTube", "TikTok", "Instagram", "QR"]
         
         for platform_name in platforms_list:
-            icon = platform_icons.get(platform_name, "◈")
-            btn = QPushButton(f"{icon}  {platform_name}")
+            btn = QPushButton(f"✦  {platform_name}")
             btn.setFixedHeight(38)
             btn.setFont(QFont("Segoe UI", 11))
             btn.clicked.connect(lambda checked, p=platform_name: self.set_platform(p))
@@ -105,6 +98,10 @@ class NovaHub(QMainWindow):
         self.platform_uis["TikTok"] = TikTokUI(self.content_widget, self.console_lock)
         self.platform_uis["TikTok"].build()
         self.content_widget.addWidget(self.platform_uis["TikTok"])
+
+        self.platform_uis["Instagram"] = InstagramUI(self.content_widget, self.console_lock)
+        self.platform_uis["Instagram"].build()
+        self.content_widget.addWidget(self.platform_uis["Instagram"])
 
         self.platform_uis["QR"] = QRUI(self.content_widget, self.console_lock)
         self.platform_uis["QR"].build()
