@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QPlainTextEdit, QLineEdit, QFrame, QFileDialog, QProgressBar, QStackedWidget
+    QLabel, QPushButton, QPlainTextEdit, QLineEdit, QFrame, QFileDialog, QProgressBar, QStackedWidget,
+    QScrollArea
 )
 from PySide6.QtCore import Qt, QThread, Signal, Slot
 from PySide6.QtGui import QFont, QPixmap
@@ -112,6 +113,77 @@ class InstagramDownloadThread(QThread):
             return f"{m:02d}:{s:02d}"
         except: return "00:00"
 
+class InstagramImageFetchThread(QThread):
+    """Thread para extraer las URLs de las imágenes sin congelar la UI"""
+    fetch_finished = Signal(dict) # info dictionary
+    console_message = Signal(str, str)
+    
+    def __init__(self, url, downloader):
+        super().__init__()
+        self.url = url
+        self.downloader = downloader
+        
+    def run(self):
+        try:
+            self.console_message.emit("ℹ Obteniendo imágenes...", "info")
+            info = self.downloader.get_images_info(self.url)
+            
+            if not info or not info.get('images'):
+                self.console_message.emit("✖ No se encontraron imágenes en el link provisto.", "error")
+                self.fetch_finished.emit({})
+                return
+                
+            self.console_message.emit(f"✓ Se encontraron {len(info['images'])} imágenes.", "success")
+            self.fetch_finished.emit(info)
+            
+        except Exception as e:
+            self.console_message.emit(f"✖ Error extracting images: {str(e)}", "error")
+            self.fetch_finished.emit({})
+
+class InstagramImagesDownloadThread(QThread):
+    """Thread para descargar masivamente una lista de imágenes"""
+    progress_updated = Signal(int, int) # completed, total
+    console_message = Signal(str, str)
+    download_finished = Signal()
+    
+    def __init__(self, images_to_download, output_path):
+        super().__init__()
+        self.images = images_to_download
+        self.output_path = output_path
+        
+    def run(self):
+        try:
+            total = len(self.images)
+            self.console_message.emit(f"↓ Iniciando descarga de {total} imágenes...", "info")
+            
+            for index, img_data in enumerate(self.images):
+                url = img_data['url']
+                filename = img_data['filename']
+                filepath = os.path.join(self.output_path, filename)
+                
+                try:
+                    response = requests.get(url, stream=True, timeout=15)
+                    if response.status_code == 200:
+                        with open(filepath, 'wb') as f:
+                            for chunk in response.iter_content(chunk_size=8192):
+                                if chunk:
+                                    f.write(chunk)
+                        
+                        self.console_message.emit(f"✓ Guardado: {filename}", "success")
+                    else:
+                        self.console_message.emit(f"✖ Error al descargar {filename}", "error")
+                except Exception as e:
+                    self.console_message.emit(f"✖ Error de red con {filename}: {e}", "error")
+                
+                # Emitir progreso actualizando 1 a 1
+                self.progress_updated.emit(index + 1, total)
+                
+            self.console_message.emit("⭐ Proceso de descarga finalizado.", "success")
+        except Exception as e:
+            self.console_message.emit(f"✖ Error general en descarga: {str(e)}", "error")
+        finally:
+            self.download_finished.emit()
+
 class AspectRatioLabel(QLabel):
     def __init__(self, text="", parent=None):
         super().__init__(text, parent)
@@ -135,6 +207,66 @@ class AspectRatioLabel(QLabel):
             )
             super().setPixmap(scaled)
 
+class ImageLoaderThread(QThread):
+    """Thread ligero para descargar miniaturas sin congelar la UI"""
+    finished = Signal(bytes)
+    
+    def __init__(self, url):
+        super().__init__()
+        self.url = url
+        
+    def run(self):
+        try:
+            resp = requests.get(self.url, timeout=5)
+            if resp.status_code == 200:
+                self.finished.emit(resp.content)
+            else:
+                self.finished.emit(b"") # Error
+        except:
+            self.finished.emit(b"")
+
+class ImageSelectButton(QFrame):
+    """Custom widget: A picture that acts like a toggle button"""
+    toggled = Signal(bool, dict) # emite estado y la metadata de la imagen
+    
+    def __init__(self, img_data):
+        super().__init__()
+        self.img_data = img_data
+        self.is_selected = True
+        
+        self.setFixedSize(150, 150)
+        self.setCursor(Qt.PointingHandCursor)
+        self.setProperty("selected", "true")
+        
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(5, 5, 5, 5)
+        
+        self.image_label = AspectRatioLabel("Cargando...")
+        layout.addWidget(self.image_label)
+        
+        # Iniciar thread asíncrono para la miniatura
+        self.loader_thread = ImageLoaderThread(self.img_data['url'])
+        self.loader_thread.finished.connect(self._on_image_loaded)
+        self.loader_thread.start()
+        
+    @Slot(bytes)
+    def _on_image_loaded(self, data):
+        if data:
+            pixmap = QPixmap()
+            pixmap.loadFromData(data)
+            self.image_label.setPixmap(pixmap)
+        else:
+            self.image_label.setText("Error")
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.is_selected = not self.is_selected
+            self.setProperty("selected", "true" if self.is_selected else "false")
+            self.style().unpolish(self)
+            self.style().polish(self)
+            self.toggled.emit(self.is_selected, self.img_data)
+        super().mousePressEvent(event)
+
 
 class InstagramUI(PlatformUI):
     def __init__(self, parent_widget: QWidget, console_lock: Lock):
@@ -143,6 +275,12 @@ class InstagramUI(PlatformUI):
         self.downloader = InstagramDownloader()
         self.is_downloading = False
         self.download_thread = None
+        self.image_fetch_thread = None
+        self.images_download_thread = None
+        
+        # Estado de imagenes
+        self.fetched_images = []
+        self.selected_images = []
 
     def build(self):
         main_layout = QVBoxLayout(self)
@@ -317,10 +455,112 @@ class InstagramUI(PlatformUI):
 
     def setup_image_page(self):
         layout = QVBoxLayout(self.page_image)
-        layout.setAlignment(Qt.AlignCenter)
-        lbl = QLabel("Funcionalidad de Imágenes próximamente")
-        lbl.setFont(QFont("Segoe UI", 16))
-        layout.addWidget(lbl)
+        layout.setContentsMargins(0,0,0,0)
+        layout.setSpacing(15)
+        
+        # 1. Input URL e Iniciar Busqueda
+        header_layout = QHBoxLayout()
+        header_layout.addWidget(QLabel("URL de Instagram (Post o Carrusel)"))
+        self.img_url_input = QLineEdit()
+        self.img_url_input.setPlaceholderText("https://www.instagram.com/p/...")
+        header_layout.addWidget(self.img_url_input, 1)
+        
+        self.btn_fetch = QPushButton("Buscar")
+        self.btn_fetch.setFixedSize(100, 40)
+        self.btn_fetch.setProperty("secondary", "true")
+        self.btn_fetch.clicked.connect(self.start_image_fetch)
+        header_layout.addWidget(self.btn_fetch)
+        layout.addLayout(header_layout)
+        
+        # 2. Destino
+        dest_layout = QHBoxLayout()
+        lbl_dest = QLabel("Carpeta destino")
+        lbl_dest.setFixedWidth(110)
+        dest_layout.addWidget(lbl_dest)
+        
+        self.img_path = QLineEdit("C:/Descargas")
+        self.img_path.setReadOnly(True)
+        dest_layout.addWidget(self.img_path, 1)
+        
+        btn_choose = QPushButton("Elegir")
+        btn_choose.setFixedSize(100, 40)
+        btn_choose.setProperty("secondary", "true")
+        btn_choose.clicked.connect(self.select_img_folder)
+        dest_layout.addWidget(btn_choose)
+        layout.addLayout(dest_layout)
+        
+        # 3. Area Central (Galeria + Consola)
+        split_layout = QHBoxLayout()
+        
+        # Galeria
+        gallery_container = QWidget()
+        gal_layout = QVBoxLayout(gallery_container)
+        gal_layout.setContentsMargins(0,0,0,0)
+        gal_layout.addWidget(QLabel("Galería (Clic para seleccionar/deseleccionar)"))
+        
+        # Scroll Area para imagenes
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setProperty("panel", "true")
+        self.scroll_area.setStyleSheet("QScrollArea { border: none; background-color: transparent; }")
+        
+        self.gallery_widget = QWidget()
+        self.gallery_widget.setStyleSheet("background-color: transparent;")
+        # Usamos Flow o Wrap. En un QVBoxLayout meteremos filas (QHBoxLayout)
+        self.gallery_layout = QVBoxLayout(self.gallery_widget)
+        self.gallery_layout.setAlignment(Qt.AlignTop)
+        
+        self.scroll_area.setWidget(self.gallery_widget)
+        gal_layout.addWidget(self.scroll_area)
+        
+        split_layout.addWidget(gallery_container, 6)
+        
+        # Consola Imagnes
+        console_container = QWidget()
+        cons_layout = QVBoxLayout(console_container)
+        cons_layout.setContentsMargins(0,0,0,0)
+        
+        chBox = QHBoxLayout()
+        chBox.addWidget(QLabel("Consola"))
+        chBox.addStretch()
+        btn_clear = QPushButton("Limpiar consola")
+        btn_clear.setFixedSize(120, 32)
+        btn_clear.setProperty("secondary", "true")
+        btn_clear.clicked.connect(self.clear_img_console)
+        chBox.addWidget(btn_clear)
+        cons_layout.addLayout(chBox)
+        
+        cFrame = QFrame()
+        cFrame.setProperty("panel", "true")
+        cl = QVBoxLayout(cFrame)
+        self.img_console = QPlainTextEdit()
+        self.img_console.setReadOnly(True)
+        cl.addWidget(self.img_console)
+        cons_layout.addWidget(cFrame, 1)
+        
+        split_layout.addWidget(console_container, 4)
+        
+        layout.addLayout(split_layout, 1)
+        
+        # 4. Footer (Progress + Download Selected)
+        footer = QHBoxLayout()
+        footer.addWidget(QLabel("Progreso:"))
+        self.img_progress = QProgressBar()
+        self.img_progress.setValue(0)
+        self.img_progress.setFixedHeight(8)
+        self.img_progress.setTextVisible(False)
+        footer.addWidget(self.img_progress, 1)
+        
+        self.btn_img_dl = QPushButton("DESCARGAR SELECCIONADAS")
+        self.btn_img_dl.setObjectName("btn_dl")
+        self.btn_img_dl.setFixedSize(220, 45)
+        self.btn_img_dl.setFont(QFont("Segoe UI", 10, QFont.Bold))
+        self.btn_img_dl.setCursor(Qt.PointingHandCursor)
+        self.btn_img_dl.setEnabled(False)
+        self.btn_img_dl.clicked.connect(self.start_images_download)
+        footer.addWidget(self.btn_img_dl)
+        
+        layout.addLayout(footer)
 
     def apply_styles(self):
         self.setStyleSheet(f"""
@@ -339,14 +579,26 @@ class InstagramUI(PlatformUI):
             QPushButton[secondary="true"]:hover {{ background-color: #252B3A; }}
             QPushButton#btn_dl {{ background-color: {ACCENT}; }}
             QPushButton#btn_dl:hover {{ background-color: #6487E5; }}
+            QPushButton#btn_dl:disabled {{ background-color: #555; color: #aaa; }}
+            
+            /* Galeria Selection Style */
+            ImageSelectButton {{ background-color: {BG_PANEL}; border-radius: 8px; border: 2px solid transparent; }}
+            ImageSelectButton[selected="true"] {{ border: 2px solid {ACCENT}; }}
         """)
 
     def select_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Seleccionar carpeta")
         if folder: self.path.setText(folder)
+        
+    def select_img_folder(self):
+        folder = QFileDialog.getExistingDirectory(self, "Seleccionar carpeta")
+        if folder: self.img_path.setText(folder)
 
     def clear_console(self):
         with self.console_lock: self.console.clear()
+        
+    def clear_img_console(self):
+        with self.console_lock: self.img_console.clear()
 
     @Slot(int)
     def update_progress(self, percent):
@@ -368,6 +620,13 @@ class InstagramUI(PlatformUI):
     def push_msg(self, msg, status):
         with self.console_lock:
             self.console.appendPlainText(msg)
+            
+    @Slot(str, str)
+    def push_img_msg(self, msg, status):
+        with self.console_lock:
+            self.img_console.appendPlainText(msg)
+
+    # ================= FUNCIONES DE VIDEO =================
 
     def start_download(self):
         if self.is_downloading: return
@@ -400,6 +659,113 @@ class InstagramUI(PlatformUI):
         self.is_downloading = False
         self.btn_dl.setEnabled(True)
         self.progress.setValue(100)
+
+    # ================= FUNCIONES DE IMÁGENES =================
+    
+    def start_image_fetch(self):
+        if self.is_downloading: return
+        self.clear_img_console()
+        
+        url = self.img_url_input.text().strip()
+        if not url:
+            self.push_img_msg("✖ Ingresa una URL válida", "error")
+            return
+            
+        self.btn_fetch.setEnabled(False)
+        self.btn_img_dl.setEnabled(False)
+        self.clear_gallery()
+        
+        self.image_fetch_thread = InstagramImageFetchThread(url, self.downloader)
+        self.image_fetch_thread.console_message.connect(self.push_img_msg)
+        self.image_fetch_thread.fetch_finished.connect(self.on_fetch_finished)
+        self.image_fetch_thread.start()
+
+    def clear_gallery(self):
+        self.fetched_images.clear()
+        self.selected_images.clear()
+        # Eliminar widgets del layout
+        while self.gallery_layout.count():
+            item = self.gallery_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+            elif item.layout() is not None:
+                # Si es un row layout
+                while item.layout().count():
+                    subitem = item.layout().takeAt(0)
+                    if subitem.widget(): subitem.widget().deleteLater()
+                item.layout().deleteLater()
+
+    @Slot(dict)
+    def on_fetch_finished(self, info):
+        self.btn_fetch.setEnabled(True)
+        if not info or not info.get('images'):
+            return
+            
+        images = info['images']
+        self.fetched_images = images
+        self.selected_images = list(images) # Por defecto todas seleccionadas
+        
+        # Llenar grilla (3 columnas por simplicidad)
+        columns = 3
+        current_row_layout = None
+        
+        for i, img_data in enumerate(images):
+            if i % columns == 0:
+                current_row_layout = QHBoxLayout()
+                current_row_layout.setAlignment(Qt.AlignLeft)
+                self.gallery_layout.addLayout(current_row_layout)
+                
+            btn = ImageSelectButton(img_data)
+            btn.toggled.connect(self.on_image_toggled)
+            current_row_layout.addWidget(btn)
+        
+        self.btn_img_dl.setText(f"DESCARGAR SELECCIONADAS ({len(self.selected_images)})")
+        self.btn_img_dl.setEnabled(True)
+
+    @Slot(bool, dict)
+    def on_image_toggled(self, is_selected, img_data):
+        if is_selected:
+            if img_data not in self.selected_images:
+                self.selected_images.append(img_data)
+        else:
+            if img_data in self.selected_images:
+                self.selected_images.remove(img_data)
+                
+        count = len(self.selected_images)
+        self.btn_img_dl.setText(f"DESCARGAR SELECCIONADAS ({count})")
+        self.btn_img_dl.setEnabled(count > 0)
+
+    def start_images_download(self):
+        if not self.selected_images: return
+        
+        out = self.img_path.text()
+        if not os.path.isdir(out):
+            self.push_img_msg("✖ Carpeta inválida", "error")
+            return
+            
+        self.is_downloading = True
+        self.btn_img_dl.setEnabled(False)
+        self.btn_fetch.setEnabled(False)
+        self.img_progress.setValue(0)
+        
+        self.images_download_thread = InstagramImagesDownloadThread(self.selected_images, out)
+        self.images_download_thread.progress_updated.connect(self.update_img_progress)
+        self.images_download_thread.console_message.connect(self.push_img_msg)
+        self.images_download_thread.download_finished.connect(self.on_img_dl_finished)
+        self.images_download_thread.start()
+
+    @Slot(int, int)
+    def update_img_progress(self, completed, total):
+        pct = int((completed / total) * 100)
+        self.img_progress.setValue(pct)
+
+    @Slot()
+    def on_img_dl_finished(self):
+        self.is_downloading = False
+        self.btn_fetch.setEnabled(True)
+        self.btn_img_dl.setEnabled(True)
+        # self.img_progress.setValue(100)
 
     def show(self): super().show()
     def hide(self): super().hide()

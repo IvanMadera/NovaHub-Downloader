@@ -5,7 +5,6 @@ import time
 
 from core.base_downloader import Downloader
 
-
 class InstagramDownloader(Downloader):
     """Descargador de contenido de Instagram usando instaloader y requests para la descarga final"""
     
@@ -92,6 +91,45 @@ class InstagramDownloader(Downloader):
 
         except Exception as e:
             print(f"✖ Error obteniendo info de Instagram: {e}")
+            return None
+
+    def get_images_info(self, url: str):
+        """Extrae la información de todas las imágenes de un post o carrusel."""
+        shortcode = self._extract_shortcode(url)
+        if not shortcode:
+            print("✖ No se pudo extraer el shortcode de la URL")
+            return None
+            
+        try:
+            post = instaloader.Post.from_shortcode(self.L.context, shortcode)
+            author = post.owner_username
+            images = []
+            
+            # Si es un sidecar (carrusel de múltiples fotos/videos)
+            if post.typename == 'GraphSidecar':
+                for i, node in enumerate(post.get_sidecar_nodes()):
+                    if not node.is_video:
+                        images.append({
+                            'url': node.display_url,
+                            'filename': f"{author}_{shortcode}_{i+1}.jpg"
+                        })
+            else:
+                # Si es una sola foto
+                if not post.is_video:
+                    # Usamos .url que suele apuntar a la mejor calidad
+                    images.append({
+                        'url': post.url,
+                        'filename': f"{author}_{shortcode}.jpg"
+                    })
+            
+            return {
+                'author': author,
+                'shortcode': shortcode,
+                'images': images
+            }
+            
+        except Exception as e:
+            print(f"✖ Error obteniendo imágenes de Instagram: {e}")
             return None
 
     def download_audio(self, url: str, output_path: str, progress_callback=None, title_callback=None):
