@@ -355,6 +355,7 @@ class InstagramUI(PlatformUI):
         url_layout.setContentsMargins(0,0,0,0)
         url_layout.addWidget(QLabel("URL del Reel/Post de Instagram"))
         self.url_input = QLineEdit()
+        self.url_input.setFixedHeight(40)
         self.url_input.setPlaceholderText("https://www.instagram.com/reel/...")
         url_layout.addWidget(self.url_input)
         layout.addWidget(url_container)
@@ -367,9 +368,11 @@ class InstagramUI(PlatformUI):
         lbl_dest.setFixedWidth(110)
         dest_layout.addWidget(lbl_dest)
         self.path = QLineEdit("C:/Descargas")
+        self.path.setFixedHeight(40)
         self.path.setReadOnly(True)
         dest_layout.addWidget(self.path, 1)
         btn_choose = QPushButton("Elegir")
+        btn_choose.setFont(QFont("Segoe UI", 10))
         btn_choose.setFixedWidth(100)
         btn_choose.setFixedHeight(40)
         btn_choose.setProperty("secondary", "true")
@@ -384,10 +387,13 @@ class InstagramUI(PlatformUI):
         info_frame = QFrame()
         info_frame.setProperty("panel", "true")
         info_layout = QVBoxLayout(info_frame)
+        info_layout.setContentsMargins(15, 15, 15, 15)
+        info_layout.setSpacing(10)
         
         def add_row(txt, w):
             r = QHBoxLayout()
             l = QLabel(txt)
+            l.setStyleSheet(f"color: {TEXT_SEC}; font-weight: bold;")
             l.setFixedWidth(80)
             r.addWidget(l)
             r.addWidget(w)
@@ -405,9 +411,10 @@ class InstagramUI(PlatformUI):
         
         # Console
         chBox = QHBoxLayout()
-        chBox.addWidget(QLabel("Consola"))
+        chBox.addWidget(QLabel("Resultado de la consola"))
         chBox.addStretch()
         btn_clear = QPushButton("Limpiar consola")
+        btn_clear.setFont(QFont("Segoe UI", 10))
         btn_clear.setFixedSize(120, 32)
         btn_clear.setProperty("secondary", "true")
         btn_clear.clicked.connect(self.clear_console)
@@ -417,7 +424,9 @@ class InstagramUI(PlatformUI):
         cFrame = QFrame()
         cFrame.setProperty("panel", "true")
         cl = QVBoxLayout(cFrame)
+        cl.setContentsMargins(10, 10, 10, 10)
         self.console = QPlainTextEdit()
+        self.console.setMinimumHeight(150)
         self.console.setReadOnly(True)
         cl.addWidget(self.console)
         left_col.addWidget(cFrame, 1)
@@ -460,12 +469,16 @@ class InstagramUI(PlatformUI):
         
         # 1. Input URL e Iniciar Busqueda
         header_layout = QHBoxLayout()
-        header_layout.addWidget(QLabel("URL de Instagram (Post o Carrusel)"))
+        lbl_url = QLabel("URL del Carrusel")
+        lbl_url.setFixedWidth(110)
+        header_layout.addWidget(lbl_url)
         self.img_url_input = QLineEdit()
+        self.img_url_input.setFixedHeight(40)
         self.img_url_input.setPlaceholderText("https://www.instagram.com/p/...")
         header_layout.addWidget(self.img_url_input, 1)
         
         self.btn_fetch = QPushButton("Buscar")
+        self.btn_fetch.setFont(QFont("Segoe UI", 10))
         self.btn_fetch.setFixedSize(100, 40)
         self.btn_fetch.setProperty("secondary", "true")
         self.btn_fetch.clicked.connect(self.start_image_fetch)
@@ -479,10 +492,12 @@ class InstagramUI(PlatformUI):
         dest_layout.addWidget(lbl_dest)
         
         self.img_path = QLineEdit("C:/Descargas")
+        self.img_path.setFixedHeight(40)
         self.img_path.setReadOnly(True)
         dest_layout.addWidget(self.img_path, 1)
         
         btn_choose = QPushButton("Elegir")
+        btn_choose.setFont(QFont("Segoe UI", 10))
         btn_choose.setFixedSize(100, 40)
         btn_choose.setProperty("secondary", "true")
         btn_choose.clicked.connect(self.select_img_folder)
@@ -521,9 +536,10 @@ class InstagramUI(PlatformUI):
         cons_layout.setContentsMargins(0,0,0,0)
         
         chBox = QHBoxLayout()
-        chBox.addWidget(QLabel("Consola"))
+        chBox.addWidget(QLabel("Resultado de la consola"))
         chBox.addStretch()
         btn_clear = QPushButton("Limpiar consola")
+        btn_clear.setFont(QFont("Segoe UI", 10))
         btn_clear.setFixedSize(120, 32)
         btn_clear.setProperty("secondary", "true")
         btn_clear.clicked.connect(self.clear_img_console)
@@ -533,7 +549,9 @@ class InstagramUI(PlatformUI):
         cFrame = QFrame()
         cFrame.setProperty("panel", "true")
         cl = QVBoxLayout(cFrame)
+        cl.setContentsMargins(10, 10, 10, 10)
         self.img_console = QPlainTextEdit()
+        self.img_console.setMinimumHeight(150)
         self.img_console.setReadOnly(True)
         cl.addWidget(self.img_console)
         cons_layout.addWidget(cFrame, 1)
@@ -566,11 +584,35 @@ class InstagramUI(PlatformUI):
         self.setStyleSheet(f"""
             QWidget {{ background-color: transparent; color: white; }}
             QLabel {{ color: {TEXT_SEC}; }}
-            QLineEdit {{ background-color: {BG_PANEL}; border:none; border-radius:8px; padding:0 10px; height:40px; }}
+            QLineEdit {{
+                background-color: {BG_PANEL};
+                border: none;
+                border-radius: 8px;
+                padding: 0 10px;
+                color: white;
+                selection-background-color: {BG_PANEL}; 
+                selection-color: white;
+            }}
             QPlainTextEdit {{ background-color: transparent; border:none; color:white; }}
             QProgressBar {{ background-color:{BG_PANEL}; border:none; border-radius:3px; }}
             QProgressBar::chunk {{ background-color:{SUCCESS}; border-radius:3px; }}
             QFrame[panel="true"] {{ background-color:{BG_PANEL}; border-radius:{RADIUS}px; }}
+            
+            QScrollBar:vertical {{
+                border: none;
+                background-color: {BG_MAIN};
+                width: 12px;
+                margin: 0px 0px 0px 0px;
+                border-radius: 6px;
+            }}
+            QScrollBar::handle:vertical {{
+                background-color: {BG_PANEL};
+                min-height: 20px;
+                border-radius: 6px;
+            }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0px; }}
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}
+            
             QPushButton {{ background-color:{BG_PANEL}; border:none; border-radius:8px; color:white; padding:5px; text-align:center; }}
             QPushButton:hover {{ background-color: #1C2230; }}
             QPushButton[active="true"] {{ background-color: {ACCENT}; font-weight:bold; }}

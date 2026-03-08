@@ -2,6 +2,20 @@
 
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 
+## [2026.3.7] - 2026-03-07
+
+### ✨ Nueva Funcionalidad: Descargador de Instagram
+
+- **Pestaña Dedicada**: Se integró Instagram al *sidebar* (`✦ Instagram`) con un selector dual para `Video` e `Imagen`.
+- **Descarga de Videos y Reels**: Extracción rápida orientada a la URL nativa e integración con el reproductor y barra de progreso de la UI.
+- **Descarga de Imágenes y Carruseles**: Función interactiva donde la UI carga dinámicamente una galería en grilla (usando `QScrollArea`) permitiendo al usuario seleccionar o deseleccionar qué fotos de un mismo *post* (carrusel) descargar.
+- **Descargas en Máxima Calidad**: Reestructuración del *backend* usando `instaloader` para extraer el puntero `display_url` de máxima calidad y evitar el guardado innecesario de *thumbnails*.
+
+### 🚀 Mejoras de Rendimiento y UI
+
+- **Multihilo Asíncrono para UI**: Las miniaturas de los carruseles masivos ahora son descargadas por un subproceso (`ImageLoaderThread`), previniendo trabas o congelamientos en sistemas Windows.
+- **Diseño Homologado**: Se replicaron las reglas estéticas (botones de 100x40px y 120x32px, `hover` con `#6487E5`, color principal `#3B5998`) de la vista de TikTok para mantener uniformidad.
+
 ## [2026.2.14] - 2026-02-14
 
 ### 🎨 Estandarización de UI (Global)

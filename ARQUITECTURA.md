@@ -12,13 +12,15 @@ YT-download/
 ├── downloaders/                     # Lógica de descarga (Backend)
 │   ├── __init__.py
 │   ├── youtube.py                  # YouTubeDownloader (yt-dlp)
-│   └── tiktok.py                   # TikTokDownloader (API tikwm)
+│   ├── tiktok.py                   # TikTokDownloader (API tikwm)
+│   └── instagram.py                # InstagramDownloader (instaloader)
 └── ui/                              # Interfaz gráfica (Frontend)
     ├── __init__.py
     ├── main.py                     # Ventana principal NovaHub y Sidebar
     ├── base_ui.py                  # Clase base PlatformUI para las vistas
     ├── youtube_ui.py               # Vista específica de YouTube
     ├── tiktok_ui.py                # Vista específica de TikTok
+    ├── instagram_ui.py             # Vista específica de Instagram
     └── qr_ui.py                    # Vista del generador de códigos QR
 ```
 
