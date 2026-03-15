@@ -11,6 +11,7 @@ from ui.youtube_ui import YouTubeUI
 from ui.tiktok_ui import TikTokUI
 from ui.instagram_ui import InstagramUI
 from ui.qr_ui import QRUI
+from ui.facebook_ui import FacebookUI
 
 # ===== PALETA =====
 BG_MAIN  = "#0E1116"
@@ -60,7 +61,7 @@ class NovaHub(QMainWindow):
 
         # Crear botones dinámicamente
         self.platform_buttons = {}
-        platforms_list = ["YouTube", "TikTok", "Instagram", "QR"]
+        platforms_list = ["YouTube", "Facebook", "TikTok", "Instagram", "QR"]
         
         for platform_name in platforms_list:
             btn = QPushButton(f"✦  {platform_name}")
@@ -98,6 +99,10 @@ class NovaHub(QMainWindow):
         self.platform_uis["TikTok"] = TikTokUI(self.content_widget, self.console_lock)
         self.platform_uis["TikTok"].build()
         self.content_widget.addWidget(self.platform_uis["TikTok"])
+
+        self.platform_uis["Facebook"] = FacebookUI(self.content_widget, self.console_lock)
+        self.platform_uis["Facebook"].build()
+        self.content_widget.addWidget(self.platform_uis["Facebook"])
 
         self.platform_uis["Instagram"] = InstagramUI(self.content_widget, self.console_lock)
         self.platform_uis["Instagram"].build()

@@ -364,6 +364,7 @@ class InstagramUI(PlatformUI):
         dest_container = QWidget()
         dest_layout = QHBoxLayout(dest_container)
         dest_layout.setContentsMargins(0,0,0,0)
+        dest_layout.setSpacing(10)
         lbl_dest = QLabel("Carpeta destino")
         lbl_dest.setFixedWidth(110)
         dest_layout.addWidget(lbl_dest)
@@ -468,7 +469,10 @@ class InstagramUI(PlatformUI):
         layout.setSpacing(15)
         
         # 1. Input URL e Iniciar Busqueda
-        header_layout = QHBoxLayout()
+        header_container = QWidget()
+        header_layout = QHBoxLayout(header_container)
+        header_layout.setContentsMargins(0, 0, 0, 0)
+        header_layout.setSpacing(10)
         lbl_url = QLabel("URL del Carrusel")
         lbl_url.setFixedWidth(110)
         header_layout.addWidget(lbl_url)
@@ -483,10 +487,13 @@ class InstagramUI(PlatformUI):
         self.btn_fetch.setProperty("secondary", "true")
         self.btn_fetch.clicked.connect(self.start_image_fetch)
         header_layout.addWidget(self.btn_fetch)
-        layout.addLayout(header_layout)
+        layout.addWidget(header_container)
         
         # 2. Destino
-        dest_layout = QHBoxLayout()
+        dest_container = QWidget()
+        dest_layout = QHBoxLayout(dest_container)
+        dest_layout.setContentsMargins(0,0,0,0)
+        dest_layout.setSpacing(10)
         lbl_dest = QLabel("Carpeta destino")
         lbl_dest.setFixedWidth(110)
         dest_layout.addWidget(lbl_dest)
@@ -502,7 +509,7 @@ class InstagramUI(PlatformUI):
         btn_choose.setProperty("secondary", "true")
         btn_choose.clicked.connect(self.select_img_folder)
         dest_layout.addWidget(btn_choose)
-        layout.addLayout(dest_layout)
+        layout.addWidget(dest_container)
         
         # 3. Area Central (Galeria + Consola)
         split_layout = QHBoxLayout()
