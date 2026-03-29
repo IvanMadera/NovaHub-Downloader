@@ -2,6 +2,20 @@
 
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 
+## [2026.3.15] - 2026-03-29
+
+### ✨ Nuevas Funcionalidades: Facebook & X (Twitter)
+
+- **Descargador de Facebook**: Se implementó una nueva herramienta integrada para procesar y descargar contenido nativo de Facebook en máxima calidad. Funciona unificando audio y video con `ffmpeg` directamente mediante el nuevo backend `yt-dlp`, garantizando máxima estabilidad.
+- **Descargador de X (Twitter)**: Se agregó la capacidad de descargar contenido multimedia de X extayendo datos profundos como Resolución, Autor, Fecha de Publicación y Descripción usando los extractores nativos libres de tokens.
+- **Uso de yt-dlp Extendido**: Reemplazo de viejas librerías inestables para consolidar YouTube, Facebook y Twitter bajo el super-motor optimizado de `yt-dlp`.
+
+### 🎨 Homologación Global de Interfaz
+
+- **Simetría Split-Layout**: Tanto Facebook como Twitter adaptaron el layout de columnas "Clean UI" probado exitosamente en TikTok.
+- **Thumbnails Redondeados**: Implementación universal del widget custom `AspectRatioLabel` con `QPainterPath` que asegura bordes redondeados (14px) respetando las proporciones reales de los pósters / thumbnails antes de la descarga.
+- **Micro-estilos Pixel Perfect**: Las cajas de consola y botones de control ("Limpiar consola", colores "Hover" `#6487E5`, etc.) se igualaron milimétricamente entre todas las *tabs* para asegurar una experiencia premium carente de discrepancias.
+
 ## [2026.3.7] - 2026-03-07
 
 ### ✨ Nueva Funcionalidad: Descargador de Instagram
