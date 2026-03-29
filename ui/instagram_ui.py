@@ -365,7 +365,7 @@ class InstagramUI(PlatformUI):
         dest_layout = QHBoxLayout(dest_container)
         dest_layout.setContentsMargins(0,0,0,0)
         dest_layout.setSpacing(10)
-        lbl_dest = QLabel("Carpeta destino")
+        lbl_dest = QLabel("Carpeta de destino")
         lbl_dest.setFixedWidth(110)
         dest_layout.addWidget(lbl_dest)
         self.path = QLineEdit("C:/Descargas")
@@ -494,7 +494,7 @@ class InstagramUI(PlatformUI):
         dest_layout = QHBoxLayout(dest_container)
         dest_layout.setContentsMargins(0,0,0,0)
         dest_layout.setSpacing(10)
-        lbl_dest = QLabel("Carpeta destino")
+        lbl_dest = QLabel("Carpeta de destino")
         lbl_dest.setFixedWidth(110)
         dest_layout.addWidget(lbl_dest)
         
