@@ -25,6 +25,18 @@
 - **Galería Interactiva**: Visualización de miniaturas de carruseles para selección individual antes de descargar.
 - **Integración Nativa**: Extracción de URLs vía `instaloader` adaptada para la descarga asíncrona fluida.
 
+### 👥 Facebook
+
+- **Descarga Multipropósito**: Procesa tanto videos públicos como descargas optimizadas unificando audio/video mediante `ffmpeg`.
+- **Motor Confiable**: Refactorizado 100% sobre `yt-dlp` logrando velocidades topes y metadatos nativos rápidos.
+
+### 🐦 X (Twitter)
+
+- **Extracción Enriquecida**: Recuperación e interpretación de cuerpo del tweet (descripción), autor, tamaño, duración y fechas.
+- **Diseño Resiliente**: Descargas en máxima fidelidad consolidando flujos a .mp4.
+
+
+
 ### ⊞ Generador de Códigos QR
 
 - **Múltiples formatos**: Soporte para URLs, JSON y credenciales WiFi.
@@ -78,5 +90,5 @@ Este proyecto es únicamente para uso educativo y personal. Asegúrate de:
 ---
 
 **Autor**: [Ivan Madera](https://github.com/IvanMadera)  
-**Versión**: 2026.3.7  
+**Versión**: 2026.3.15  
 **Última actualización**: Marzo 2026

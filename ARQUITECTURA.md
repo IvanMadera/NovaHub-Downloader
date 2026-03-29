@@ -13,6 +13,8 @@ YT-download/
 │   ├── __init__.py
 │   ├── youtube.py                  # YouTubeDownloader (yt-dlp)
 │   ├── tiktok.py                   # TikTokDownloader (API tikwm)
+│   ├── facebook.py                 # FacebookDownloader (yt-dlp)
+│   ├── twitter.py                  # TwitterDownloader (yt-dlp)
 │   └── instagram.py                # InstagramDownloader (instaloader)
 └── ui/                              # Interfaz gráfica (Frontend)
     ├── __init__.py
@@ -20,6 +22,8 @@ YT-download/
     ├── base_ui.py                  # Clase base PlatformUI para las vistas
     ├── youtube_ui.py               # Vista específica de YouTube
     ├── tiktok_ui.py                # Vista específica de TikTok
+    ├── facebook_ui.py              # Vista específica de Facebook
+    ├── twitter_ui.py               # Vista específica de X/Twitter
     ├── instagram_ui.py             # Vista específica de Instagram
     └── qr_ui.py                    # Vista del generador de códigos QR
 ```
