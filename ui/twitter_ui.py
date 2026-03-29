@@ -284,7 +284,7 @@ class TwitterUI(PlatformUI):
         console_header.addWidget(QLabel("Resultado de la consola"))
         console_header.addStretch()
         clear_button = QPushButton("Limpiar consola")
-        clear_button.setFixedSize(100, 32)
+        clear_button.setFixedSize(120, 32)
         clear_button.setFont(QFont("Segoe UI", 10))
         clear_button.clicked.connect(self.clear_console)
         console_header.addWidget(clear_button)
@@ -296,7 +296,7 @@ class TwitterUI(PlatformUI):
         console_wrapper_layout.setContentsMargins(10, 10, 10, 10)
         
         self.console = QPlainTextEdit()
-        self.console.setMinimumHeight(120) 
+        self.console.setMinimumHeight(150) 
         self.console.setReadOnly(True)
         self.console.setFrameShape(QFrame.NoFrame)
         self.console.setStyleSheet("background-color: transparent; border: none; color: white;")
