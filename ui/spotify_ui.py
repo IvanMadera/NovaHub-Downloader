@@ -110,14 +110,14 @@ class SpotifyUI(PlatformUI):
         
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Ingresa nombre de la canción/artista o link de Spotify...")
-        self.search_input.setFixedHeight(45)
-        self.search_input.setFont(QFont("Segoe UI", 11))
-        self.search_input.setStyleSheet(f"QLineEdit {{ background-color: {BG_PANEL}; border: none; border-radius: {RADIUS}px; padding: 0 15px; color: white; }}")
+        self.search_input.setFixedHeight(40)
         self.search_input.returnPressed.connect(self.perform_search)
         search_box.addWidget(self.search_input)
         
-        self.btn_search = QPushButton("BUSCAR")
-        self.btn_search.setFixedSize(120, 45)
+        self.btn_search = QPushButton("Buscar")
+        self.btn_search.setFont(QFont("Segoe UI", 10))
+        self.btn_search.setFixedSize(100, 40)
+        self.btn_search.setProperty("secondary", "true")
         self.btn_search.setCursor(Qt.PointingHandCursor)
         self.btn_search.clicked.connect(self.perform_search)
         search_box.addWidget(self.btn_search)
@@ -135,11 +135,11 @@ class SpotifyUI(PlatformUI):
         self.path = QLineEdit("C:/Descargas")
         self.path.setFixedHeight(40)
         self.path.setReadOnly(True)
-        self.path.setStyleSheet(f"QLineEdit {{ background-color: {BG_PANEL}; border: none; border-radius: {RADIUS}px; padding: 0 15px; color: white; }}")
         dest_layout.addWidget(self.path, 1)
         
         btn_choose = QPushButton("Elegir")
-        btn_choose.setFixedSize(120, 40)
+        btn_choose.setFont(QFont("Segoe UI", 10))
+        btn_choose.setFixedSize(100, 40)
         btn_choose.setProperty("secondary", "true")
         btn_choose.clicked.connect(self.select_folder)
         dest_layout.addWidget(btn_choose)
@@ -155,6 +155,11 @@ class SpotifyUI(PlatformUI):
         lbl_results.setFont(QFont("Segoe UI", 12, QFont.Bold))
         left_panel.addWidget(lbl_results)
         
+        res_frame = QFrame()
+        res_frame.setStyleSheet(f"QFrame {{ background-color: {BG_PANEL}; border-radius: {RADIUS}px; }}")
+        res_layout = QVBoxLayout(res_frame)
+        res_layout.setContentsMargins(10, 10, 10, 10)
+        
         self.table_res = QTableWidget(0, 4)
         self.table_res.setHorizontalHeaderLabels(["Portada", "Canción", "Artista / Álbum", "Acción"])
         self.table_res.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
@@ -165,13 +170,15 @@ class SpotifyUI(PlatformUI):
         self.table_res.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table_res.verticalHeader().setVisible(False)
         self.table_res.setIconSize(QSize(50, 50))
-        self.table_res.setStyleSheet(f"""
-            QTableWidget {{ background-color: {BG_PANEL}; border-radius: {RADIUS}px; gridline-color: transparent; border: none; color: white; }}
-            QHeaderView::section {{ background-color: #1C2230; color: {TEXT_SEC}; border: none; padding: 5px; font-weight: bold; }}
-            QTableWidget::item {{ border-bottom: 1px solid #1f2536; padding: 5px; }}
-            QTableWidget::item:selected {{ background-color: #1C2230; }}
+        self.table_res.setStyleSheet("""
+            QTableWidget { background-color: transparent; gridline-color: transparent; border: none; color: white; outline: none; }
+            QTableWidget::item:focus { outline: none; border: none; }
+            QHeaderView::section { background-color: transparent; color: #A9B1D6; border: none; padding: 5px; font-weight: bold; }
+            QTableWidget::item { border-bottom: 1px solid #1f2536; padding: 5px; }
+            QTableWidget::item:selected { background-color: #1C2230; border: none; outline: none; }
         """)
-        left_panel.addWidget(self.table_res)
+        res_layout.addWidget(self.table_res)
+        left_panel.addWidget(res_frame)
         split_layout.addLayout(left_panel, 6) # 60% Ancho
         
         # --- RIGHT: Cola de Descargas
@@ -179,6 +186,11 @@ class SpotifyUI(PlatformUI):
         lbl_queue = QLabel("Cola Activa")
         lbl_queue.setFont(QFont("Segoe UI", 12, QFont.Bold))
         right_panel.addWidget(lbl_queue)
+        
+        queue_frame = QFrame()
+        queue_frame.setStyleSheet(f"QFrame {{ background-color: {BG_PANEL}; border-radius: {RADIUS}px; }}")
+        queue_layout = QVBoxLayout(queue_frame)
+        queue_layout.setContentsMargins(10, 10, 10, 10)
         
         self.table_queue = QTableWidget(0, 3)
         self.table_queue.setHorizontalHeaderLabels(["Track", "Progreso", "Estado"])
@@ -188,12 +200,15 @@ class SpotifyUI(PlatformUI):
         self.table_queue.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table_queue.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table_queue.verticalHeader().setVisible(False)
-        self.table_queue.setStyleSheet(f"""
-            QTableWidget {{ background-color: {BG_PANEL}; border-radius: {RADIUS}px; border: none; gridline-color: transparent; color: white; }}
-            QHeaderView::section {{ background-color: #1C2230; color: {TEXT_SEC}; border: none; padding: 5px; font-weight: bold; }}
-            QTableWidget::item {{ border-bottom: 1px solid #1f2536; padding: 5px; }}
+        self.table_queue.setStyleSheet("""
+            QTableWidget { background-color: transparent; border: none; gridline-color: transparent; color: white; outline: none; }
+            QTableWidget::item:focus { outline: none; border: none; }
+            QHeaderView::section { background-color: transparent; color: #A9B1D6; border: none; padding: 5px; font-weight: bold; }
+            QTableWidget::item { border-bottom: 1px solid #1f2536; padding: 5px; }
+            QTableWidget::item:selected { background-color: #1C2230; border: none; outline: none; }
         """)
-        right_panel.addWidget(self.table_queue)
+        queue_layout.addWidget(self.table_queue)
+        right_panel.addWidget(queue_frame)
         split_layout.addLayout(right_panel, 4) # 40% Ancho
         
         main_layout.addLayout(split_layout)
@@ -209,12 +224,51 @@ class SpotifyUI(PlatformUI):
         self.setStyleSheet(f"""
             QWidget {{ background-color: {BG_MAIN}; color: white; }}
             QLabel {{ color: {TEXT_SEC}; }}
-            QPushButton {{ background-color: {ACCENT}; border: none; border-radius: 8px; color: white; font-weight: bold; padding: 5px; }}
+            QLineEdit {{
+                background-color: {BG_PANEL};
+                border: none;
+                border-radius: 8px;
+                padding: 0 10px;
+                color: white;
+                selection-background-color: {BG_PANEL};
+                selection-color: white;
+            }}
+            QPushButton {{ background-color: {ACCENT}; border: none; border-radius: 8px; color: white; text-align: center; padding: 5px; }}
             QPushButton:hover {{ background-color: #6487E5; }}
-            QPushButton[secondary="true"] {{ background-color: #1C2230; font-weight: normal; }}
+            QPushButton[secondary="true"] {{ background-color: #1C2230; }}
             QPushButton[secondary="true"]:hover {{ background-color: #252B3A; }}
             QProgressBar {{ background-color: transparent; border: 1px solid #333; text-align: center; color: white; border-radius: 4px; }}
-            QProgressBar::chunk {{ background-color: {ACCENT}; border-radius: 4px; }}
+            QProgressBar::chunk {{ background-color: {SUCCESS}; border-radius: 4px; }}
+            
+            QScrollBar:horizontal {{
+                border: none;
+                background-color: transparent;
+                height: 8px;
+                margin: 0px 0px 0px 0px;
+                border-radius: 4px;
+            }}
+            QScrollBar::handle:horizontal {{
+                background-color: #3b4252;
+                min-width: 20px;
+                border-radius: 4px;
+            }}
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0px; }}
+            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background: none; }}
+            
+            QScrollBar:vertical {{
+                border: none;
+                background-color: transparent;
+                width: 8px;
+                margin: 0px 0px 0px 0px;
+                border-radius: 4px;
+            }}
+            QScrollBar::handle:vertical {{
+                background-color: #3b4252;
+                min-height: 20px;
+                border-radius: 4px;
+            }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0px; }}
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}
         """)
 
     def select_folder(self):
@@ -270,13 +324,22 @@ class SpotifyUI(PlatformUI):
             
             # 3. Botón Añadir a Cola
             btn_add = QPushButton("Al Queue")
+            btn_add.setFont(QFont("Segoe UI", 10))
             btn_add.setFixedSize(90, 30)
-            btn_add.setProperty("secondary", "true")
             btn_add.style().unpolish(btn_add)
             btn_add.style().polish(btn_add)
             # bind index safely
             btn_add.clicked.connect(lambda _, idx=i: self.add_to_queue(idx))
-            self.table_res.setCellWidget(i, 3, btn_add)
+            
+            btn_widget = QWidget()
+            btn_widget.setObjectName("btnContainer")
+            btn_widget.setStyleSheet("#btnContainer { background-color: transparent; }")
+            btn_layout = QHBoxLayout(btn_widget)
+            btn_layout.setContentsMargins(0, 0, 0, 0)
+            btn_layout.setAlignment(Qt.AlignCenter)
+            btn_layout.addWidget(btn_add)
+            
+            self.table_res.setCellWidget(i, 3, btn_widget)
             
             self.table_res.setRowHeight(i, 60)
             
@@ -355,7 +418,7 @@ class SpotifyUI(PlatformUI):
                 bar.setValue(100 if success else 0)
             if lbl:
                 lbl.setText("✔" if success else "✖")
-                lbl.setStyleSheet("color: #9ECE6A" if success else "color: #F7768E")
+                lbl.setStyleSheet("color: white;")
             
             if success:
                 self.status_lbl.setText(f"✔ Finalizado: {msg}")
