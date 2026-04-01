@@ -64,13 +64,29 @@ class FacebookDownloader(Downloader):
                 thumbnail = info.get('thumbnail')
                 view_count = info.get('view_count', 0)
                 
+                # yt-dlp casi siempre devuelve None para filesize de Facebook, sacamos el peso de los headers del server original
+                filesize = info.get('filesize') or info.get('filesize_approx') or 0
+                if filesize == 0 and info.get('url'):
+                    import requests
+                    try:
+                        head_res = requests.head(info.get('url'), timeout=5)
+                        filesize = int(head_res.headers.get('content-length', 0))
+                    except:
+                        pass
+                
+                timestamp = info.get('timestamp', 0)
+                upload_date = info.get('upload_date', '')
+                
                 return {
                     'title': title,
                     'author': author,
                     'description': description,
                     'duration': duration,
                     'thumbnail': thumbnail,
+                    'filesize': filesize,
                     'view_count': view_count,
+                    'timestamp': timestamp,
+                    'upload_date': upload_date,
                     'download_url': url # En yt-dlp, solo necesitas la URL original para descargar
                 }
 

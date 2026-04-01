@@ -389,6 +389,16 @@ class UniversalUI(PlatformUI):
     def start_download(self):
         if self.is_downloading: return
         self.clear_console()
+        
+        # Reiniciar información visual
+        self.domain_label.setText("N/A")
+        self.title_label.setText("N/A")
+        self.date_label.setText("N/A")
+        self.duration_label.setText("N/A")
+        self.size_label.setText("N/A")
+        self.preview_label.setPixmap(QPixmap())
+        self.preview_label.setText("Sin vista previa web")
+        
         url = self.url_input.text().strip()
         if not url:
             self.add_to_console("✖ Por favor ingresa una URL válida", "error")

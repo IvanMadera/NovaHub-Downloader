@@ -555,6 +555,20 @@ class YouTubeUI(PlatformUI):
         with self.console_lock:
             self.console.setPlainText("✔ Exitosos:\n✖ Fallidos:")
         
+        # Reiniciar información visual
+        self.video_title.setText("Esperando descarga")
+        try:
+            pixmap = QPixmap("assets/NovaHub_title.png")
+            if not pixmap.isNull():
+                scaled_pixmap = pixmap.scaled(200, 160, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                self.preview_label.setPixmap(scaled_pixmap)
+            else:
+                self.preview_label.clear()
+                self.preview_label.setText("Vista previa")
+        except:
+            self.preview_label.clear()
+            self.preview_label.setText("Vista previa")
+        
         # Crear y conectar el thread
         self.download_thread = DownloadThread(urls, output_path, self.downloader)
         self.download_thread.progress_updated.connect(lambda q, p: self.progress_value_label.setText(p))

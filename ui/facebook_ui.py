@@ -52,10 +52,20 @@ class FacebookDownloadThread(QThread):
                 return
             # Formatear e informar datos
             author = info.get('author', 'Desconocido')
+            
+            timestamp = info.get('timestamp', 0)
+            upload_date = info.get('upload_date')
+            if not timestamp and upload_date and len(upload_date) == 8:
+                date_val = f"{upload_date[6:8]}/{upload_date[4:6]}/{upload_date[0:4]}"
+            else:
+                date_val = self._format_date(timestamp)
+                
+            duration_val = self._format_duration(info.get('duration', 0))
             description = self._truncate_description(info.get('description', 'Sin descripción'))
             thumbnail_url = info.get('thumbnail')
+            size = self._format_filesize(info.get('filesize', 0))
             
-            self.info_updated.emit(author, "N/A", "N/A", "N/A", "N/A", "N/A", description)
+            self.info_updated.emit(author, "N/A", date_val, "N/A", duration_val, size, description)
             if thumbnail_url:
                 try:
                     thumb_response = requests.get(thumbnail_url, timeout=10)
@@ -325,6 +335,12 @@ class FacebookUI(PlatformUI):
 
         self.author_label = QLabel("N/A")
         info_layout.addLayout(create_info_row("Autor:", self.author_label))
+        self.date_label = QLabel("N/A")
+        info_layout.addLayout(create_info_row("Fecha:", self.date_label))
+        self.duration_label = QLabel("N/A")
+        info_layout.addLayout(create_info_row("Duración:", self.duration_label))
+        self.size_label = QLabel("N/A")
+        info_layout.addLayout(create_info_row("Tamaño:", self.size_label))
         
         # Description acts as a block
         desc_label = QLabel("Descripción:")
@@ -520,6 +536,9 @@ class FacebookUI(PlatformUI):
     def update_video_info(self, author, views, date, resolution, duration, size, description):
         """Actualiza la información del video"""
         self.author_label.setText(author)
+        self.date_label.setText(date)
+        self.duration_label.setText(duration)
+        self.size_label.setText(size)
         self.description_label.setText(description)
     
     @Slot(bytes)
@@ -553,6 +572,15 @@ class FacebookUI(PlatformUI):
             return
             
         self.clear_console()
+        
+        # Reiniciar información visual
+        self.author_label.setText("N/A")
+        self.date_label.setText("N/A")
+        self.duration_label.setText("N/A")
+        self.size_label.setText("N/A")
+        self.description_label.setText("N/A")
+        self.preview_label.setPixmap(QPixmap())
+        self.preview_label.setText("Sin vista previa")
         
         url = self.url_input.text().strip()
         if not url:

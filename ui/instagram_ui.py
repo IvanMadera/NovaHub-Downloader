@@ -53,7 +53,7 @@ class InstagramDownloadThread(QThread):
             date = self._format_date(info.get('upload_date', 0))
             resolution = "N/A"
             duration = self._format_duration(info.get('duration', 0))
-            size = "N/A" # No lo sabemos con instaloader de antemano de forma rapida
+            size = self._format_filesize(info.get('filesize', 0))
             description = info.get('description', 'Sin descripción')
             if len(description) > 100: description = description[:97] + "..."
             
@@ -112,6 +112,16 @@ class InstagramDownloadThread(QThread):
             s = s % 60
             return f"{m:02d}:{s:02d}"
         except: return "00:00"
+        
+    def _format_filesize(self, size_bytes):
+        try:
+            if not size_bytes: return "N/A"
+            size = int(size_bytes)
+            if size >= 1073741824: return f"{size/1073741824:.2f} GB"
+            elif size >= 1048576: return f"{size/1048576:.2f} MB"
+            elif size >= 1024: return f"{size/1024:.2f} KB"
+            else: return f"{size} B"
+        except: return "N/A"
 
 class InstagramImageFetchThread(QThread):
     """Thread para extraer las URLs de las imágenes sin congelar la UI"""
@@ -403,10 +413,22 @@ class InstagramUI(PlatformUI):
         self.lbl_author = QLabel("N/A")
         self.lbl_date = QLabel("N/A")
         self.lbl_duration = QLabel("N/A")
+        self.lbl_size = QLabel("N/A")
         
         add_row("Autor:", self.lbl_author)
         add_row("Fecha:", self.lbl_date)
         add_row("Duración:", self.lbl_duration)
+        add_row("Tamaño:", self.lbl_size)
+        
+        desc_label = QLabel("Descripción:")
+        desc_label.setStyleSheet(f"color: {TEXT_SEC}; font-weight: bold;")
+        info_layout.addWidget(desc_label)
+        
+        self.lbl_desc = QLabel("N/A")
+        self.lbl_desc.setWordWrap(True)
+        self.lbl_desc.setStyleSheet("color: white;")
+        self.lbl_desc.setMaximumHeight(60)
+        info_layout.addWidget(self.lbl_desc)
         
         left_col.addWidget(info_frame)
         
@@ -658,6 +680,8 @@ class InstagramUI(PlatformUI):
         self.lbl_author.setText(author)
         self.lbl_date.setText(date)
         self.lbl_duration.setText(duration)
+        self.lbl_size.setText(size)
+        self.lbl_desc.setText(desc)
 
     @Slot(bytes)
     def update_preview(self, img_data):
@@ -680,6 +704,15 @@ class InstagramUI(PlatformUI):
     def start_download(self):
         if self.is_downloading: return
         self.clear_console()
+        
+        # Reiniciar información visual
+        self.lbl_author.setText("N/A")
+        self.lbl_date.setText("N/A")
+        self.lbl_duration.setText("N/A")
+        self.lbl_size.setText("N/A")
+        self.lbl_desc.setText("N/A")
+        self.preview.setPixmap(QPixmap())
+        self.preview.setText("Sin vista previa")
         
         url = self.url_input.text().strip()
         if not url:

@@ -67,7 +67,7 @@ class NovaHub(QMainWindow):
         platforms_list = ["Spotify", "YouTube", "Facebook", "X (Twitter)", "TikTok", "Instagram", "Universal", "QR"]
         
         for platform_name in platforms_list:
-            btn = QPushButton(f"✦  {platform_name}")
+            btn = QPushButton(f"⁕  {platform_name}")
             btn.setFixedHeight(38)
             btn.setFont(QFont("Segoe UI", 11))
             btn.clicked.connect(lambda checked, p=platform_name: self.set_platform(p))

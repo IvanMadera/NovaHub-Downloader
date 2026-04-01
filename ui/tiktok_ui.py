@@ -560,6 +560,15 @@ class TikTokUI(PlatformUI):
             
         self.clear_console()
         
+        # Reiniciar información visual
+        self.author_label.setText("N/A")
+        self.date_label.setText("N/A")
+        self.duration_label.setText("N/A")
+        self.size_label.setText("N/A")
+        self.description_label.setText("N/A")
+        self.preview_label.setPixmap(QPixmap())
+        self.preview_label.setText("Sin vista previa")
+        
         url = self.url_input.text().strip()
         if not url:
             self.add_to_console("✖ Por favor ingresa una URL válida", "error")
