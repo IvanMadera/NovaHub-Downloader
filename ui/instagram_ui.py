@@ -45,7 +45,7 @@ class InstagramDownloadThread(QThread):
             info = self.downloader.get_video_info(self.url)
             
             if not info:
-                self.console_message.emit("✗ No se pudo obtener información del video", "error")
+                self.console_message.emit("✖ No se pudo obtener información del video", "error")
                 return
             
             author = info.get('author', 'N/A')
@@ -188,7 +188,7 @@ class InstagramImagesDownloadThread(QThread):
                 # Emitir progreso actualizando 1 a 1
                 self.progress_updated.emit(index + 1, total)
                 
-            self.console_message.emit("⭐ Proceso de descarga finalizado.", "success")
+            self.console_message.emit("★ Proceso de descarga finalizado.", "success")
         except Exception as e:
             self.console_message.emit(f"✖ Error general en descarga: {str(e)}", "error")
         finally:
@@ -449,6 +449,7 @@ class InstagramUI(PlatformUI):
         cl = QVBoxLayout(cFrame)
         cl.setContentsMargins(10, 10, 10, 10)
         self.console = QPlainTextEdit()
+        self.console.setFont(QFont("Segoe UI", 10))
         self.console.setMinimumHeight(150)
         self.console.setReadOnly(True)
         cl.addWidget(self.console)
@@ -627,17 +628,22 @@ class InstagramUI(PlatformUI):
             QProgressBar::chunk {{ background-color:{SUCCESS}; border-radius:3px; }}
             QFrame[panel="true"] {{ background-color:{BG_PANEL}; border-radius:{RADIUS}px; }}
             
+            QScrollBar:horizontal {{
+                border: none; background-color: transparent;
+                height: 8px; margin: 0; border-radius: 4px;
+            }}
+            QScrollBar::handle:horizontal {{
+                background-color: #3b4252; min-width: 20px; border-radius: 4px;
+            }}
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0px; }}
+            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background: none; }}
+            
             QScrollBar:vertical {{
-                border: none;
-                background-color: {BG_MAIN};
-                width: 12px;
-                margin: 0px 0px 0px 0px;
-                border-radius: 6px;
+                border: none; background-color: transparent;
+                width: 8px; margin: 0; border-radius: 4px;
             }}
             QScrollBar::handle:vertical {{
-                background-color: {BG_PANEL};
-                min-height: 20px;
-                border-radius: 6px;
+                background-color: #3b4252; min-height: 20px; border-radius: 4px;
             }}
             QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0px; }}
             QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}

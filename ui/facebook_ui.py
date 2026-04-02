@@ -48,7 +48,7 @@ class FacebookDownloadThread(QThread):
             info = self.downloader.get_video_info(self.url)
             
             if not info:
-                self.console_message.emit("✗ No se pudo obtener información del video", "error")
+                self.console_message.emit("✖ No se pudo obtener información del video", "error")
                 return
             # Formatear e informar datos
             author = info.get('author', 'Desconocido')
@@ -383,6 +383,7 @@ class FacebookUI(PlatformUI):
         console_wrapper_layout.setSpacing(0)
         
         self.console = QPlainTextEdit()
+        self.console.setFont(QFont("Segoe UI", 10))
         # Takes remaining space but has min height
         self.console.setMinimumHeight(150) 
         self.console.setReadOnly(True)
@@ -509,6 +510,25 @@ class FacebookUI(PlatformUI):
             QPushButton[secondary="true"]:hover {{
                 background-color: #252B3A;
             }}
+            
+            QScrollBar:horizontal {{
+                border: none; background-color: transparent;
+                height: 8px; margin: 0; border-radius: 4px;
+            }}
+            QScrollBar::handle:horizontal {{
+                background-color: #3b4252; min-width: 20px; border-radius: 4px;
+            }}
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0px; }}
+            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background: none; }}
+            QScrollBar:vertical {{
+                border: none; background-color: transparent;
+                width: 8px; margin: 0; border-radius: 4px;
+            }}
+            QScrollBar::handle:vertical {{
+                background-color: #3b4252; min-height: 20px; border-radius: 4px;
+            }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0px; }}
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}
         """)
         
         # Aplicar atributo secondary

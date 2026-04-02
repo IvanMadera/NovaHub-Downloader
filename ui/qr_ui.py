@@ -6,7 +6,7 @@ import qrcode
 from PIL import Image
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-    QPushButton, QTextEdit, QComboBox, QFrame, 
+    QPushButton, QTextEdit, QPlainTextEdit, QComboBox, QFrame, 
     QStackedWidget, QLineEdit, QFormLayout, QFileDialog
 )
 from PySide6.QtCore import Qt, QTimer
@@ -16,10 +16,15 @@ from ui.base_ui import PlatformUI
 
 # Define styles internally or import if shared
 # Reusing some colors from main.py for consistency
+BG_MAIN  = "#0E1116"
 BG_PANEL = "#151A21"
 ACCENT   = "#3B5998"
+SUCCESS  = "#9ECE6A"
+ERROR    = "#F7768E"
 TEXT_SEC = "#A9B1D6"
 TEXT_MAIN = "#FFFFFF"
+RADIUS   = 14
+SECONDARY_ALT = "#2D3748"  # Color específico para botón guardar QR
 
 class QRUI(PlatformUI):
     def __init__(self, parent_widget: QWidget, console_lock):
@@ -41,7 +46,8 @@ class QRUI(PlatformUI):
         # Type Selector
         type_layout = QHBoxLayout()
         type_label = QLabel("Tipo de contenido:")
-        type_label.setStyleSheet(f"color: {TEXT_SEC}; font-size: 14px;")
+        type_label.setFont(QFont("Segoe UI", 10))
+        type_label.setStyleSheet(f"color: {TEXT_SEC};")
         
         self.type_combo = QComboBox()
         self.type_combo.addItems(["URL", "JSON", "WiFi"])
@@ -95,7 +101,7 @@ class QRUI(PlatformUI):
         self.text_input_frame.setStyleSheet(f"""
             QFrame {{
                 background-color: {BG_PANEL};
-                border-radius: 14px;
+                border-radius: {RADIUS}px;
             }}
         """)
         text_input_layout = QVBoxLayout(self.text_input_frame)
@@ -182,15 +188,17 @@ class QRUI(PlatformUI):
         # Generate Button
         self.generate_btn = QPushButton("Generar Código QR")
         self.generate_btn.setCursor(Qt.PointingHandCursor)
+        self.generate_btn.setFont(QFont("Segoe UI", 10, QFont.Bold))
+        self.generate_btn.setFixedHeight(40)
+        self.generate_btn.setProperty("primary", "true")
         self.generate_btn.clicked.connect(self.generate_qr)
         self.generate_btn.setStyleSheet(f"""
             QPushButton {{
                 background-color: {ACCENT};
                 color: white;
                 font-weight: bold;
-                padding: 12px;
+                padding: 5px;
                 border-radius: 8px;
-                font-size: 14px;
                 text-align: center;
             }}
             QPushButton:hover {{
@@ -216,7 +224,7 @@ class QRUI(PlatformUI):
         self.qr_label.setStyleSheet(f"""
             QLabel {{
                 background-color: {BG_PANEL}; 
-                border-radius: 14px; 
+                border-radius: {RADIUS}px; 
                 padding: 10px;
                 color: {TEXT_SEC};
             }}
@@ -225,15 +233,16 @@ class QRUI(PlatformUI):
         # Download Button
         self.save_btn = QPushButton("Descargar PNG (720x720)")
         self.save_btn.setCursor(Qt.PointingHandCursor)
-        self.save_btn.setEnabled(False) # Disabled until generated
+        self.save_btn.setEnabled(False)
+        self.save_btn.setFont(QFont("Segoe UI", 10))
         self.save_btn.clicked.connect(self.save_qr_image)
         self.save_btn.setStyleSheet(f"""
             QPushButton {{
-                background-color: #2D3748;
+                background-color: {SECONDARY_ALT};
                 color: {TEXT_SEC};
                 border: none;
                 border-radius: 8px;
-                padding: 10px;
+                padding: 8px;
                 font-weight: bold;
                 text-align: center;
             }}
@@ -265,6 +274,7 @@ class QRUI(PlatformUI):
         self.clear_btn.clicked.connect(self.clear_console)
         self.clear_btn.setFixedSize(120, 32)
         self.clear_btn.setFont(QFont("Segoe UI", 10))
+        self.clear_btn.setProperty("secondary", "true")
         self.clear_btn.setStyleSheet(f"""
             QPushButton {{
                 background-color: #1C2230;
@@ -288,25 +298,47 @@ class QRUI(PlatformUI):
         console_wrapper.setStyleSheet(f"""
             QFrame {{
                 background-color: {BG_PANEL};
-                border-radius: 14px;
+                border-radius: {RADIUS}px;
             }}
         """)
         console_wrapper_layout = QVBoxLayout(console_wrapper)
         console_wrapper_layout.setContentsMargins(10, 10, 10, 10)
 
-        self.console = QTextEdit()
+        self.console = QPlainTextEdit()
+        self.console.setFont(QFont("Segoe UI", 10))
         self.console.setReadOnly(True)
         self.console.setFrameShape(QFrame.NoFrame)
         self.console.setStyleSheet(f"""
-            QTextEdit {{
+            QPlainTextEdit {{
                 background-color: transparent;
                 color: #FFFFFF;
-                font-family: Segoe UI, sans-serif;
-                font-size: 13px;
                 border: none;
             }}
         """)
         console_wrapper_layout.addWidget(self.console)
+        
+        # Scrollbars globales para la UI
+        self.setStyleSheet(f"""
+            QWidget {{ background-color: {BG_MAIN}; color: {TEXT_MAIN}; }}
+            QScrollBar:horizontal {{
+                border: none; background-color: transparent;
+                height: 8px; margin: 0; border-radius: 4px;
+            }}
+            QScrollBar::handle:horizontal {{
+                background-color: #3b4252; min-width: 20px; border-radius: 4px;
+            }}
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0px; }}
+            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background: none; }}
+            QScrollBar:vertical {{
+                border: none; background-color: transparent;
+                width: 8px; margin: 0; border-radius: 4px;
+            }}
+            QScrollBar::handle:vertical {{
+                background-color: #3b4252; min-height: 20px; border-radius: 4px;
+            }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0px; }}
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}
+        """)
         
         console_layout.addLayout(console_header_layout)
         console_layout.addWidget(console_wrapper)
@@ -329,7 +361,8 @@ class QRUI(PlatformUI):
 
     def create_label(self, text):
         lbl = QLabel(text)
-        lbl.setStyleSheet(f"color: {TEXT_SEC}; font-size: 14px;")
+        lbl.setFont(QFont("Segoe UI", 10))
+        lbl.setStyleSheet(f"color: {TEXT_SEC};")
         return lbl
 
     def toggle_password(self):
@@ -376,7 +409,7 @@ class QRUI(PlatformUI):
 
     def log_message(self, message, is_error=False):
         icon = "✖" if is_error else "✔"
-        self.console.append(f'<span style="color: white;">{icon} {message}</span>')
+        self.console.appendPlainText(f"{icon} {message}")
         # Scroll to bottom
         sb = self.console.verticalScrollBar()
         sb.setValue(sb.maximum())
@@ -478,7 +511,7 @@ class QRUI(PlatformUI):
             self.qr_label.setStyleSheet(f"""
                 QLabel {{
                     background-color: white; 
-                    border-radius: 14px; 
+                    border-radius: {RADIUS}px; 
                     padding: 10px;
                 }}
             """)
@@ -490,7 +523,7 @@ class QRUI(PlatformUI):
             self.qr_label.setStyleSheet(f"""
                 QLabel {{
                     background-color: {BG_PANEL}; 
-                    border-radius: 14px; 
+                    border-radius: {RADIUS}px; 
                     padding: 10px;
                     color: {TEXT_SEC};
                 }}

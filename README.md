@@ -1,6 +1,6 @@
 # ╫ Nova Hub
 
-**Nova Hub** es una aplicación de escritorio moderna construida con Python y PySide6 diseñada para centralizar la descarga de contenido de múltiples plataformas como YouTube y TikTok. Ofrece una interfaz intuitiva, rápida y estéticamente premium.
+**Nova Hub** es una aplicación de escritorio moderna construida con Python y PySide6 diseñada para centralizar la descarga de contenido de múltiples plataformas como YouTube, TikTok, Instagram, Facebook, X (Twitter) y Spotify. Ofrece una interfaz intuitiva, rápida y estéticamente premium con un sistema de design language unificado.
 
 ## 🎯 Funcionalidades
 
@@ -35,7 +35,18 @@
 - **Extracción Enriquecida**: Recuperación e interpretación de cuerpo del tweet (descripción), autor, tamaño, duración y fechas.
 - **Diseño Resiliente**: Descargas en máxima fidelidad consolidando flujos a .mp4.
 
+### 🎵 Spotify
 
+- **Búsqueda integrada**: Localiza canciones por nombre, artista o link directo de Spotify.
+- **Descarga en HQ**: Audio en la mejor calidad disponible con metadatos completos (título, artista, álbum, carátula).
+- **Cola de descargas activa**: Sistema de cola con progreso independiente y simultáneo por track.
+- **Portadas HD**: Inyección automática de cover art de alta resolución en los archivos descargados.
+
+### 🌐 Descargador Universal
+
+- **Motor yt-dlp genérico**: Soporte para cientos de sitios web adicionales no cubiertos por los módulos individuales.
+- **Metadatos enriquecidos**: Muestra dominio, título, fecha, duración y tamaño antes de descargar.
+- **Vista previa de miniatura**: Carga dinámica del thumbnail del contenido.
 
 ### ⊞ Generador de Códigos QR
 
@@ -46,9 +57,9 @@
 
 ## 📋 Requisitos
 
-- **Python 3.8+**
-- **FFmpeg**: Requerido para la conversión de audio en YouTube.
-- **Dependencias**: Listadas en `requirements.txt` (PySide6, requests, yt-dlp, qrcode, Pillow, instaloader).
+- **Python 3.10+**
+- **FFmpeg**: Requerido para la conversión y fusión de audio/video.
+- **Dependencias**: Listadas en `requirements.txt` (PySide6, requests, yt-dlp, instaloader, spotipy, mutagen, qrcode, Pillow).
 
 ## 🚀 Instalación y Uso
 
@@ -75,7 +86,7 @@
 
 - `main.py`: Punto de entrada de la aplicación.
 - `ui/`: Contiene toda la lógica de la interfaz gráfica y vistas.
-  - `qr_ui.py`: Vista del generador de códigos QR.
+  - `youtube_ui.py`, `tiktok_ui.py`, `instagram_ui.py`, `facebook_ui.py`, `twitter_ui.py`, `spotify_ui.py`, `universal_ui.py`, `qr_ui.py`
 - `downloaders/`: Backend con los scripts de descarga para cada plataforma.
 - `core/`: Clases base y abstracciones del sistema.
 
@@ -90,5 +101,5 @@ Este proyecto es únicamente para uso educativo y personal. Asegúrate de:
 ---
 
 **Autor**: [Ivan Madera](https://github.com/IvanMadera)  
-**Versión**: 2026.3.15  
-**Última actualización**: Marzo 2026
+**Versión**: 2026.3.29  
+**Última actualización**: Abril 2026

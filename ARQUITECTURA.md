@@ -8,14 +8,16 @@ YT-download/
 ├── requirements.txt                 # Dependencias (PySide6, requests, etc.)
 ├── core/                            # Clases base y utilidades
 │   ├── __init__.py
-│   └── base_downloader.py          # Clase abstracta Downloader (Base para YT/TikTok)
+│   └── base_downloader.py          # Clase abstracta Downloader (Base para todos los módulos)
 ├── downloaders/                     # Lógica de descarga (Backend)
 │   ├── __init__.py
 │   ├── youtube.py                  # YouTubeDownloader (yt-dlp)
 │   ├── tiktok.py                   # TikTokDownloader (API tikwm)
 │   ├── facebook.py                 # FacebookDownloader (yt-dlp)
 │   ├── twitter.py                  # TwitterDownloader (yt-dlp)
-│   └── instagram.py                # InstagramDownloader (instaloader)
+│   ├── instagram.py                # InstagramDownloader (instaloader)
+│   ├── spotify.py                  # SpotifyDownloader (spotipy + mutagen)
+│   └── universal.py                # UniversalDownloader (yt-dlp genérico)
 └── ui/                              # Interfaz gráfica (Frontend)
     ├── __init__.py
     ├── main.py                     # Ventana principal NovaHub y Sidebar
@@ -25,6 +27,8 @@ YT-download/
     ├── facebook_ui.py              # Vista específica de Facebook
     ├── twitter_ui.py               # Vista específica de X/Twitter
     ├── instagram_ui.py             # Vista específica de Instagram
+    ├── spotify_ui.py               # Vista específica de Spotify (búsqueda + cola)
+    ├── universal_ui.py             # Vista Universal (motor yt-dlp genérico)
     └── qr_ui.py                    # Vista del generador de códigos QR
 ```
 
@@ -32,11 +36,12 @@ YT-download/
 
 El proyecto utiliza un patrón de **Vistas Intercambiables** gestionadas por un `QStackedWidget` en `ui/main.py`:
 
-1.  **NovaHub (ui/main.py)**: Administra el Sidebar, el Footer y el contenedor principal.
-2.  **PlatformUI (ui/base_ui.py)**: Clase base que define el contrato para cualquier plataforma nueva (método `build()`).
-3.  **QRUI (ui/qr_ui.py)**: Módulo independiente para generación de códigos QR (no hereda de PlatformUI al no ser un descargador).
-4.  **Hilos de Descarga**: Tanto YouTube como TikTok ejecutan sus descargas en hilos separados (`QThread`) para evitar que la interfaz se congele.
-5.  **Comunicación**: Se utilizan `Signals` y `Slots` de PySide6 para actualizar la UI (progreso, consola, metadatos) desde los hilos de descarga.
+1. **NovaHub (ui/main.py)**: Administra el Sidebar, el Footer y el contenedor principal. Los botones del sidebar se generan dinámicamente desde el diccionario `PLATFORMS`.
+2. **PlatformUI (ui/base_ui.py)**: Clase base que define el contrato para cualquier plataforma nueva (método `build()`).
+3. **QRUI (ui/qr_ui.py)**: Módulo para generación de códigos QR. Comparte el mismo design language pero con layout y lógica propios.
+4. **Design Language Unificado**: Todas las vistas comparten la misma paleta (`BG_MAIN=#0E1116`, `BG_PANEL=#151A21`, `ACCENT=#3B5998`, `RADIUS=14px`) y los mismos estándares de tipografía (`Segoe UI`), scrollbars y botones.
+5. **Hilos de Descarga**: Todos los módulos ejecutan descargas en hilos separados (`QThread`) con `threading.Lock` para escritura thread-safe en la consola.
+6. **Comunicación**: Se utilizan `Signals` y `Slots` de PySide6 para actualizar la UI (progreso, consola, metadatos, vista previa) desde los hilos de descarga.
 
 ## Cómo agregar una nueva plataforma
 
