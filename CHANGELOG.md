@@ -2,7 +2,48 @@
 
 Todos los cambios notables en este proyecto serán documentados en este archivo.
 
+## [2026.3.29] - 2026-04-02
+
+### ✨ Nuevas Funcionalidades: Spotify & Descargador Universal
+
+- **Descargador de Spotify (`spotify_ui.py`)**: Nuevo módulo con buscador integrado por nombre/artista/link. Sistema de cola con descargas simultáneas e independientes por track, inyección automática de metadatos (título, artista, álbum, año) y portadas HD mediante `mutagen`.
+- **Descargador Universal (`universal_ui.py`)**: Motor genérico basado en `yt-dlp` con soporte para cientos de sitios. Muestra dominio, título, fecha, duración, tamaño y vista previa del thumbnail antes de descargar.
+
+### 🔧 Mejoras de UX
+
+- **Reset de vista previa al descargar**: En todas las UIs con vista previa (Facebook, Instagram, TikTok, X, YouTube, Universal), al iniciar una nueva descarga se limpian la imagen de previsualización y todos los labels de metadatos (`N/A`), evitando que datos de una búsqueda anterior persistan visualmente.
+- **Limpieza de consola universal**: El método `clear_console()` al inicio de `start_download()` está implementado de forma consistente en **todos** los módulos.
+
+### 🎨 Homologación Global de Interfaz (Design Language)
+
+- **Scrollbars unificados**: Implementación del estándar de scrollbar (8px, fondo `transparent`, handle `#3b4252`) en Facebook, TikTok, Twitter, Universal, YouTube e Instagram. La UI de Instagram fue corregida de 12px/`BG_PANEL` al nuevo estándar.
+- **Fuente de consola estándar**: Se especificó explícitamente `QFont("Segoe UI", 10)` en el widget `QPlainTextEdit` de consola de todas las UIs (Facebook, Instagram, TikTok, Twitter, Universal, YouTube, QR).
+- **YouTube UI — eliminación de inline styles**: Los botones `Elegir` y `Limpiar consola` migraron de `setStyleSheet()` inline a la propiedad `secondary="true"` con `unpolish()`/`polish()` para correcta aplicación del QSS. Se corrigió `text-align: center` y `padding: 5px` en la regla base de `QPushButton`.
+- **QR UI — homologación completa**:
+  - Paleta completa añadida: `BG_MAIN`, `SUCCESS`, `ERROR`, `RADIUS`, `SECONDARY_ALT`.
+  - Consola migrada de `QTextEdit` (HTML) a `QPlainTextEdit` con `appendPlainText()`.
+  - Labels de formulario WiFi: `font-size: 14px` CSS → `QFont("Segoe UI", 10)`.
+  - Todos los `border-radius: 14px` hardcoded → variable `RADIUS`.
+  - Botón "Descargar PNG" usa constante `SECONDARY_ALT` en lugar de color literal.
+  - Botón "Limpiar consola" migrado a propiedad `secondary="true"`.
+  - Scrollbars globales añadidos via `self.setStyleSheet()`.
+  - `pass_frame` (contraseña WiFi) corregido a `border-radius: 8px` para coincidir con el campo SSID.
+
+### 🔣 Íconos de Texto
+
+- Unificación del símbolo de error: `✗` → `✖` en threads de Facebook, Instagram y TikTok.
+- Reemplazo del emoji `⭐` por el carácter tipográfico `★` en el mensaje de proceso completo de Instagram.
+
+### 🧱 Campos de Información — Facebook UI
+
+- Añadidos labels `Autor`, `Fecha`, `Duración` y `Tamaño` en la UI de Facebook, incluyendo fallback mediante `requests.head` al CDN para obtener `Content-Length` cuando `yt-dlp` no reporta el filesize.
+
+### 🖼️ Instagram UI
+
+- Añadido campo `Descripción` del post en la sección de información del video.
+
 ## [2026.3.15] - 2026-03-29
+
 
 ### ✨ Nuevas Funcionalidades: Facebook & X (Twitter)
 

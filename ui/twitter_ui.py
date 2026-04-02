@@ -296,6 +296,7 @@ class TwitterUI(PlatformUI):
         console_wrapper_layout.setContentsMargins(10, 10, 10, 10)
         
         self.console = QPlainTextEdit()
+        self.console.setFont(QFont("Segoe UI", 10))
         self.console.setMinimumHeight(150) 
         self.console.setReadOnly(True)
         self.console.setFrameShape(QFrame.NoFrame)
@@ -361,6 +362,25 @@ class TwitterUI(PlatformUI):
             QPushButton:disabled {{ background-color: #555; }}
             QPushButton[secondary="true"] {{ background-color: #1C2230; }}
             QPushButton[secondary="true"]:hover {{ background-color: #252B3A; }}
+            
+            QScrollBar:horizontal {{
+                border: none; background-color: transparent;
+                height: 8px; margin: 0; border-radius: 4px;
+            }}
+            QScrollBar::handle:horizontal {{
+                background-color: #3b4252; min-width: 20px; border-radius: 4px;
+            }}
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0px; }}
+            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background: none; }}
+            QScrollBar:vertical {{
+                border: none; background-color: transparent;
+                width: 8px; margin: 0; border-radius: 4px;
+            }}
+            QScrollBar::handle:vertical {{
+                background-color: #3b4252; min-height: 20px; border-radius: 4px;
+            }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0px; }}
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}
         """)
         for child in self.findChildren(QPushButton):
             if child.text() in ["Elegir", "Limpiar consola"]:
@@ -404,6 +424,16 @@ class TwitterUI(PlatformUI):
     def start_download(self):
         if self.is_downloading: return
         self.clear_console()
+        
+        # Reiniciar información visual
+        self.author_label.setText("N/A")
+        self.date_label.setText("N/A")
+        self.duration_label.setText("N/A")
+        self.size_label.setText("N/A")
+        self.description_label.setText("N/A")
+        self.preview_label.setPixmap(QPixmap())
+        self.preview_label.setText("Sin vista previa")
+        
         url = self.url_input.text().strip()
         if not url:
             self.add_to_console("✖ Por favor ingresa una URL válida", "error")

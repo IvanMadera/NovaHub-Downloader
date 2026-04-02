@@ -13,8 +13,10 @@ from ui.instagram_ui import InstagramUI
 from ui.qr_ui import QRUI
 from ui.facebook_ui import FacebookUI
 from ui.twitter_ui import TwitterUI
+from ui.universal_ui import UniversalUI
+from ui.spotify_ui import SpotifyUI
 
-# ===== PALETA =====
+# ===== PALETA ORO VERDE =====
 BG_MAIN  = "#0E1116"
 BG_PANEL = "#151A21"
 ACCENT   = "#3B5998"
@@ -62,10 +64,10 @@ class NovaHub(QMainWindow):
 
         # Crear botones dinámicamente
         self.platform_buttons = {}
-        platforms_list = ["YouTube", "Facebook", "X (Twitter)", "TikTok", "Instagram", "QR"]
+        platforms_list = ["Spotify", "YouTube", "Facebook", "X (Twitter)", "TikTok", "Instagram", "Universal", "QR"]
         
         for platform_name in platforms_list:
-            btn = QPushButton(f"✦  {platform_name}")
+            btn = QPushButton(f"⁕  {platform_name}")
             btn.setFixedHeight(38)
             btn.setFont(QFont("Segoe UI", 11))
             btn.clicked.connect(lambda checked, p=platform_name: self.set_platform(p))
@@ -113,6 +115,14 @@ class NovaHub(QMainWindow):
         self.platform_uis["Instagram"].build()
         self.content_widget.addWidget(self.platform_uis["Instagram"])
 
+        self.platform_uis["Universal"] = UniversalUI(self.content_widget, self.console_lock)
+        self.platform_uis["Universal"].build()
+        self.content_widget.addWidget(self.platform_uis["Universal"])
+        
+        self.platform_uis["Spotify"] = SpotifyUI(self.content_widget, self.console_lock)
+        self.platform_uis["Spotify"].build()
+        self.content_widget.addWidget(self.platform_uis["Spotify"])
+
         self.platform_uis["QR"] = QRUI(self.content_widget, self.console_lock)
         self.platform_uis["QR"].build()
         self.content_widget.addWidget(self.platform_uis["QR"])
@@ -124,8 +134,8 @@ class NovaHub(QMainWindow):
         # Aplicar estilos
         self.apply_styles()
 
-        # Mostrar YouTube por defecto
-        self.set_platform("YouTube")
+        # Mostrar Spotify por defecto
+        self.set_platform("Spotify")
 
     def apply_styles(self):
         """Aplica los estilos QSS a la ventana"""

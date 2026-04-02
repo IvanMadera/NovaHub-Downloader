@@ -74,13 +74,23 @@ class InstagramDownloader(Downloader):
                 upload_date = int(post.date_utc.timestamp())
 
             download_url = post.video_url
+            
+            # Obtener el tamaño del archivo con una petición HEAD rápida
+            filesize = 0
+            if download_url:
+                try:
+                    head_res = requests.head(download_url, timeout=5)
+                    filesize = int(head_res.headers.get('content-length', 0))
+                except:
+                    pass
 
             return {
                 'title': f"{author}_{shortcode}",
                 'author': author,
                 'duration': duration,
                 'thumbnail': thumbnail_url,
-                'filesize': 0, # Difícil de saber sin HEAD request
+                'filesize': filesize,
+                'description': description,
                 'view_count': view_count,
                 'upload_date': upload_date,
                 'width': 0,

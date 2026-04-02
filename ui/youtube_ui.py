@@ -284,39 +284,15 @@ class YouTubeUI(PlatformUI):
         self.path = QLineEdit("C:/Descargas")
         self.path.setFixedHeight(40)
         self.path.setReadOnly(True)  # Solo lectura, solo se cambia con el botón "Elegir"
-        # Redondear menos el campo de destino (ej. 8px en lugar de RADIUS)
-        # Forzar color de selección para evitar el rojo por defecto del sistema
-        # Hacemos que la selección sea del mismo color que el fondo para que sea "invisible"
-        self.path.setStyleSheet(f"""
-            QLineEdit {{
-                background-color: {BG_PANEL};
-                border: none;
-                border-radius: 8px;
-                padding: 0 10px;
-                color: white;
-                selection-background-color: {BG_PANEL}; 
-                selection-color: white;
-            }}
-        """)
         dest_layout.addWidget(self.path)
+        
         
         choose_button = QPushButton("Elegir")
         choose_button.setFixedWidth(100)
         choose_button.setFixedHeight(40)
         choose_button.setFont(QFont("Segoe UI", 10))
+        choose_button.setProperty("secondary", "true")
         choose_button.clicked.connect(self.select_folder)
-        # Homologar radius para botón Elegir (MENOS REDONDEADO)
-        choose_button.setStyleSheet(f"""
-            QPushButton {{
-                background-color: #1C2230;
-                border-radius: 8px;
-                color: white;
-                text-align: center;
-            }}
-            QPushButton:hover {{
-                background-color: #252B3A;
-            }}
-        """)
         dest_layout.addWidget(choose_button)
         
         main_layout.addWidget(dest_container, 4, 0, 1, 2)
@@ -336,20 +312,8 @@ class YouTubeUI(PlatformUI):
         clear_button = QPushButton("Limpiar consola")
         clear_button.setFixedSize(120, 32)
         clear_button.setFont(QFont("Segoe UI", 10))
+        clear_button.setProperty("secondary", "true")
         clear_button.clicked.connect(self.clear_console)
-        # Forzar estilos específicos para este botón (MENOS REDONDEADO)
-        clear_button.setStyleSheet(f"""
-            QPushButton {{
-                background-color: #1C2230;
-                border-radius: 8px;
-                color: white;
-                text-align: center;
-                padding: 5px;
-            }}
-            QPushButton:hover {{
-                background-color: #252B3A;
-            }}
-        """)
         header_layout.addWidget(clear_button)
         
         main_layout.addWidget(console_header, 5, 0, 1, 2)
@@ -367,6 +331,7 @@ class YouTubeUI(PlatformUI):
         console_frame_layout.setContentsMargins(10, 10, 10, 10)
         
         self.console = QPlainTextEdit()
+        self.console.setFont(QFont("Segoe UI", 10))
         self.console.setMinimumHeight(100)
         self.console.setReadOnly(True)
         self.console.setFrameShape(QFrame.NoFrame)
@@ -398,9 +363,11 @@ class YouTubeUI(PlatformUI):
             QPlainTextEdit, QLineEdit {{
                 background-color: {BG_PANEL};
                 border: none;
-                border-radius: {RADIUS}px;
-                padding: 8px;
+                border-radius: 8px;
+                padding: 0 10px;
                 color: white;
+                selection-background-color: {BG_PANEL};
+                selection-color: white;
             }}
             
             QFrame {{
@@ -413,7 +380,8 @@ class YouTubeUI(PlatformUI):
                 border: none;
                 border-radius: {RADIUS}px;
                 color: white;
-                padding: 10px;
+                padding: 5px;
+                text-align: center;
             }}
             
             QPushButton:hover {{
@@ -426,19 +394,43 @@ class YouTubeUI(PlatformUI):
             
             QPushButton[secondary="true"] {{
                 background-color: #1C2230;
-                border-radius: {RADIUS}px;
+                border-radius: 8px;
+                color: white;
+                text-align: center;
+                padding: 5px;
             }}
             
             QPushButton[secondary="true"]:hover {{
                 background-color: #252B3A;
             }}
+
+            QScrollBar:horizontal {{
+                border: none; background-color: transparent;
+                height: 8px; margin: 0; border-radius: 4px;
+            }}
+            QScrollBar::handle:horizontal {{
+                background-color: #3b4252; min-width: 20px; border-radius: 4px;
+            }}
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0px; }}
+            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background: none; }}
+            QScrollBar:vertical {{
+                border: none; background-color: transparent;
+                width: 8px; margin: 0; border-radius: 4px;
+            }}
+            QScrollBar::handle:vertical {{
+                background-color: #3b4252; min-height: 20px; border-radius: 4px;
+            }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0px; }}
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}
         """)
         
-        # Aplicar atributo secondary a botones específicos
+        # Aplicar atributo secondary a botones específicos y re-polishar
         if hasattr(self, 'path'):
             for child in self.findChildren(QPushButton):
                 if child.text() in ["Elegir", "Limpiar consola"]:
                     child.setProperty("secondary", "true")
+                    child.style().unpolish(child)
+                    child.style().polish(child)
     
     def create_card(self, title, value, color="white"):
         """Crea una tarjeta de estadística"""
@@ -554,6 +546,20 @@ class YouTubeUI(PlatformUI):
         
         with self.console_lock:
             self.console.setPlainText("✔ Exitosos:\n✖ Fallidos:")
+        
+        # Reiniciar información visual
+        self.video_title.setText("Esperando descarga")
+        try:
+            pixmap = QPixmap("assets/NovaHub_title.png")
+            if not pixmap.isNull():
+                scaled_pixmap = pixmap.scaled(200, 160, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                self.preview_label.setPixmap(scaled_pixmap)
+            else:
+                self.preview_label.clear()
+                self.preview_label.setText("Vista previa")
+        except:
+            self.preview_label.clear()
+            self.preview_label.setText("Vista previa")
         
         # Crear y conectar el thread
         self.download_thread = DownloadThread(urls, output_path, self.downloader)

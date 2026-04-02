@@ -5,3 +5,5 @@ requests>=2.31.0
 instaloader>=4.13.0
 qrcode>=7.4.2
 Pillow>=10.2.0
+mutagen>=1.47.0
+ytmusicapi>=1.1.0

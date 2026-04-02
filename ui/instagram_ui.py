@@ -45,7 +45,7 @@ class InstagramDownloadThread(QThread):
             info = self.downloader.get_video_info(self.url)
             
             if not info:
-                self.console_message.emit("✗ No se pudo obtener información del video", "error")
+                self.console_message.emit("✖ No se pudo obtener información del video", "error")
                 return
             
             author = info.get('author', 'N/A')
@@ -53,7 +53,7 @@ class InstagramDownloadThread(QThread):
             date = self._format_date(info.get('upload_date', 0))
             resolution = "N/A"
             duration = self._format_duration(info.get('duration', 0))
-            size = "N/A" # No lo sabemos con instaloader de antemano de forma rapida
+            size = self._format_filesize(info.get('filesize', 0))
             description = info.get('description', 'Sin descripción')
             if len(description) > 100: description = description[:97] + "..."
             
@@ -112,6 +112,16 @@ class InstagramDownloadThread(QThread):
             s = s % 60
             return f"{m:02d}:{s:02d}"
         except: return "00:00"
+        
+    def _format_filesize(self, size_bytes):
+        try:
+            if not size_bytes: return "N/A"
+            size = int(size_bytes)
+            if size >= 1073741824: return f"{size/1073741824:.2f} GB"
+            elif size >= 1048576: return f"{size/1048576:.2f} MB"
+            elif size >= 1024: return f"{size/1024:.2f} KB"
+            else: return f"{size} B"
+        except: return "N/A"
 
 class InstagramImageFetchThread(QThread):
     """Thread para extraer las URLs de las imágenes sin congelar la UI"""
@@ -178,7 +188,7 @@ class InstagramImagesDownloadThread(QThread):
                 # Emitir progreso actualizando 1 a 1
                 self.progress_updated.emit(index + 1, total)
                 
-            self.console_message.emit("⭐ Proceso de descarga finalizado.", "success")
+            self.console_message.emit("★ Proceso de descarga finalizado.", "success")
         except Exception as e:
             self.console_message.emit(f"✖ Error general en descarga: {str(e)}", "error")
         finally:
@@ -403,10 +413,22 @@ class InstagramUI(PlatformUI):
         self.lbl_author = QLabel("N/A")
         self.lbl_date = QLabel("N/A")
         self.lbl_duration = QLabel("N/A")
+        self.lbl_size = QLabel("N/A")
         
         add_row("Autor:", self.lbl_author)
         add_row("Fecha:", self.lbl_date)
         add_row("Duración:", self.lbl_duration)
+        add_row("Tamaño:", self.lbl_size)
+        
+        desc_label = QLabel("Descripción:")
+        desc_label.setStyleSheet(f"color: {TEXT_SEC}; font-weight: bold;")
+        info_layout.addWidget(desc_label)
+        
+        self.lbl_desc = QLabel("N/A")
+        self.lbl_desc.setWordWrap(True)
+        self.lbl_desc.setStyleSheet("color: white;")
+        self.lbl_desc.setMaximumHeight(60)
+        info_layout.addWidget(self.lbl_desc)
         
         left_col.addWidget(info_frame)
         
@@ -427,6 +449,7 @@ class InstagramUI(PlatformUI):
         cl = QVBoxLayout(cFrame)
         cl.setContentsMargins(10, 10, 10, 10)
         self.console = QPlainTextEdit()
+        self.console.setFont(QFont("Segoe UI", 10))
         self.console.setMinimumHeight(150)
         self.console.setReadOnly(True)
         cl.addWidget(self.console)
@@ -605,17 +628,22 @@ class InstagramUI(PlatformUI):
             QProgressBar::chunk {{ background-color:{SUCCESS}; border-radius:3px; }}
             QFrame[panel="true"] {{ background-color:{BG_PANEL}; border-radius:{RADIUS}px; }}
             
+            QScrollBar:horizontal {{
+                border: none; background-color: transparent;
+                height: 8px; margin: 0; border-radius: 4px;
+            }}
+            QScrollBar::handle:horizontal {{
+                background-color: #3b4252; min-width: 20px; border-radius: 4px;
+            }}
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0px; }}
+            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background: none; }}
+            
             QScrollBar:vertical {{
-                border: none;
-                background-color: {BG_MAIN};
-                width: 12px;
-                margin: 0px 0px 0px 0px;
-                border-radius: 6px;
+                border: none; background-color: transparent;
+                width: 8px; margin: 0; border-radius: 4px;
             }}
             QScrollBar::handle:vertical {{
-                background-color: {BG_PANEL};
-                min-height: 20px;
-                border-radius: 6px;
+                background-color: #3b4252; min-height: 20px; border-radius: 4px;
             }}
             QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0px; }}
             QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}
@@ -658,6 +686,8 @@ class InstagramUI(PlatformUI):
         self.lbl_author.setText(author)
         self.lbl_date.setText(date)
         self.lbl_duration.setText(duration)
+        self.lbl_size.setText(size)
+        self.lbl_desc.setText(desc)
 
     @Slot(bytes)
     def update_preview(self, img_data):
@@ -680,6 +710,15 @@ class InstagramUI(PlatformUI):
     def start_download(self):
         if self.is_downloading: return
         self.clear_console()
+        
+        # Reiniciar información visual
+        self.lbl_author.setText("N/A")
+        self.lbl_date.setText("N/A")
+        self.lbl_duration.setText("N/A")
+        self.lbl_size.setText("N/A")
+        self.lbl_desc.setText("N/A")
+        self.preview.setPixmap(QPixmap())
+        self.preview.setText("Sin vista previa")
         
         url = self.url_input.text().strip()
         if not url:
